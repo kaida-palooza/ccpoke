@@ -82,6 +82,9 @@ export class CursorProvider implements AgentProvider {
 
     const gitChanges = collectGitChanges(event.cwd);
 
+    const obj = raw as Record<string, unknown>;
+    const tmuxTarget = typeof obj.tmux_target === "string" ? obj.tmux_target : undefined;
+
     return {
       projectName: extractProjectName(event.cwd, event.transcriptPath),
       responseSummary: summary.lastAssistantMessage,
@@ -92,6 +95,7 @@ export class CursorProvider implements AgentProvider {
       model: composerData.model || event.model,
       agentSessionId: event.conversationId,
       cwd: event.cwd,
+      tmuxTarget,
     };
   }
 
@@ -99,6 +103,7 @@ export class CursorProvider implements AgentProvider {
     const obj = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
     const cwd = typeof obj.cwd === "string" ? obj.cwd : "";
     const transcriptPath = typeof obj.transcript_path === "string" ? obj.transcript_path : "";
+    const tmuxTarget = typeof obj.tmux_target === "string" ? obj.tmux_target : undefined;
 
     return {
       projectName: cwd ? extractProjectName(cwd, transcriptPath) : "unknown",
@@ -109,6 +114,7 @@ export class CursorProvider implements AgentProvider {
       outputTokens: 0,
       model: "",
       cwd,
+      tmuxTarget,
     };
   }
 }

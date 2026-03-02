@@ -4,6 +4,8 @@ import { join } from "node:path";
 
 import Database from "better-sqlite3";
 
+import { isMacOS, isWindows } from "../../utils/constants.js";
+
 export interface CursorComposerData {
   durationMs: number;
   model: string;
@@ -15,12 +17,11 @@ const EMPTY_COMPOSER_DATA: CursorComposerData = {
 };
 
 function getCursorStateDbPath(): string {
-  const base =
-    process.platform === "darwin"
-      ? join(homedir(), "Library", "Application Support", "Cursor")
-      : process.platform === "win32"
-        ? join(process.env.APPDATA ?? "", "Cursor")
-        : join(homedir(), ".config", "Cursor");
+  const base = isMacOS()
+    ? join(homedir(), "Library", "Application Support", "Cursor")
+    : isWindows()
+      ? join(process.env.APPDATA ?? "", "Cursor")
+      : join(homedir(), ".config", "Cursor");
 
   return join(base, "User", "globalStorage", "state.vscdb");
 }

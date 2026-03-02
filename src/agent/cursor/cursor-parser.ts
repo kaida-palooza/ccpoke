@@ -117,7 +117,7 @@ export function parseTranscript(transcriptPath: string): TranscriptSummary {
         .map((p) => p.text!)
         .join("\n");
       if (text) {
-        lastAssistantText = text;
+        lastAssistantText = stripCursorThinkingBlock(text);
         break;
       }
     }
@@ -130,4 +130,8 @@ export function parseTranscript(transcriptPath: string): TranscriptSummary {
     outputTokens: 0,
     model: "",
   };
+}
+
+function stripCursorThinkingBlock(text: string): string {
+  return text.replace(/\n\n\*\*[^*]+\*\*\n\n[\s\S]*$/, "").trim();
 }

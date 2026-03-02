@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 
-import { ApiRoute } from "../../utils/constants.js";
+import { ApiRoute, isWindows } from "../../utils/constants.js";
 import { getPackageVersion, paths } from "../../utils/paths.js";
 import { AgentName } from "../types.js";
 
@@ -24,6 +24,12 @@ interface CursorHooksConfig {
 function hasCcpokeHook(stopHooks: CursorStopHook[]): boolean {
   return stopHooks.some(
     (entry) => typeof entry.command === "string" && entry.command.includes("ccpoke")
+  );
+}
+
+function hasExactHookPath(stopHooks: CursorStopHook[]): boolean {
+  return stopHooks.some(
+    (entry) => typeof entry.command === "string" && entry.command === paths.cursorHookScript
   );
 }
 
@@ -82,7 +88,9 @@ export class CursorInstaller {
 
     try {
       const config = CursorInstaller.readConfig();
-      if (!hasCcpokeHook(config.hooks?.stop ?? [])) missing.push("Stop hook in hooks.json");
+      const stopHooks = config.hooks?.stop ?? [];
+      if (!hasCcpokeHook(stopHooks)) missing.push("Stop hook in hooks.json");
+      else if (!hasExactHookPath(stopHooks)) missing.push("wrong hook script path in hooks.json");
     } catch {
       missing.push("hooks.json");
     }
@@ -105,13 +113,29 @@ export class CursorInstaller {
     mkdirSync(paths.hooksDir, { recursive: true });
 
     const agentParam = `?agent=${AgentName.Cursor}`;
-    const isWindows = process.platform === "win32";
     const version = getPackageVersion();
-    const script = isWindows
+    const script = isWindows()
       ? `@REM ccpoke-version: ${version}\n@echo off\ncurl -s -X POST http://localhost:${hookPort}${ApiRoute.HookStop}${agentParam} -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" --data-binary @- > nul 2>&1\n`
-      : `#!/bin/bash\n# ccpoke-version: ${version}\ncurl -s -X POST http://localhost:${hookPort}${ApiRoute.HookStop}${agentParam} \\\n  -H "Content-Type: application/json" \\\n  -H "X-CCPoke-Secret: ${hookSecret}" \\\n  --data-binary @- > /dev/null 2>&1 || true\n`;
+      : `#!/bin/bash
+# ccpoke-version: ${version}
+INPUT=$(cat | tr -d '\\n\\r')
+[ -z "$INPUT" ] && exit 0
+TMUX_TARGET=""
+if [ -n "$TMUX_PANE" ]; then
+  TMUX_TARGET=$(tmux display-message -t "$TMUX_PANE" -p '#{session_name}:#{window_index}.#{pane_index}' 2>/dev/null || echo "")
+elif [ -n "$TMUX" ]; then
+  TMUX_TARGET=$(tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}' 2>/dev/null || echo "")
+fi
+if [ -n "$TMUX_TARGET" ] && echo "$TMUX_TARGET" | grep -qE '^[a-zA-Z0-9_.:/@ -]+$'; then
+  INPUT=$(echo "$INPUT" | sed 's/}$/,"tmux_target":"'"$TMUX_TARGET"'"}/')
+fi
+echo "$INPUT" | curl -s -X POST "http://localhost:${hookPort}${ApiRoute.HookStop}${agentParam}" \\
+  -H "Content-Type: application/json" \\
+  -H "X-CCPoke-Secret: ${hookSecret}" \\
+  --data-binary @- > /dev/null 2>&1 || true
+`;
 
-    writeFileSync(paths.cursorHookScript, script, { mode: isWindows ? 0o644 : 0o700 });
+    writeFileSync(paths.cursorHookScript, script, { mode: isWindows() ? 0o644 : 0o700 });
   }
 
   private static removeScript(): void {
