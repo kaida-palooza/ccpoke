@@ -7,11 +7,13 @@ import { t } from "../i18n/index.js";
 import { InstallMethod } from "../utils/constants.js";
 import { detectInstallMethod } from "../utils/install-detection.js";
 import { paths } from "../utils/paths.js";
+import { removeShellCompletion } from "../utils/shell-completion.js";
 
 export function runUninstall(): void {
   p.intro(t("uninstall.intro"));
 
   removeAllAgentHooks();
+  removeShellCompletion();
   removeConfigDirectory();
 
   printPostUninstallHint();

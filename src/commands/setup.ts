@@ -1,3 +1,5 @@
+import { execSync, spawn } from "node:child_process";
+
 import * as p from "@clack/prompts";
 import TelegramBot from "node-telegram-bot-api";
 import qrcode from "qrcode-terminal";
@@ -6,7 +8,7 @@ import { createDefaultRegistry } from "../agent/agent-registry.js";
 import { AgentName } from "../agent/types.js";
 import { ConfigManager, type Config } from "../config-manager.js";
 import { Locale, LOCALE_LABELS, setLocale, SUPPORTED_LOCALES, t } from "../i18n/index.js";
-import { DEFAULT_HOOK_PORT } from "../utils/constants.js";
+import { DEFAULT_HOOK_PORT, isMacOS, isWindows } from "../utils/constants.js";
 import { detectCliPrefix } from "../utils/install-detection.js";
 import { installShellCompletion } from "../utils/shell-completion.js";
 
@@ -46,6 +48,7 @@ export async function runSetup(): Promise<Config> {
   saveConfig(config);
   syncAgentHooks(config, previousAgents);
   registerChatId(userId);
+  await promptTmuxSetup();
 
   const startCommand = detectCliPrefix();
   installShellCompletion();
@@ -269,4 +272,95 @@ function registerChatId(userId: number): void {
   state.chat_id = userId;
   ConfigManager.saveChatState(state);
   p.log.success(t("setup.chatIdRegistered"));
+}
+
+function getTmuxVersion(): string | null {
+  try {
+    return execSync("tmux -V", { stdio: "pipe", encoding: "utf-8" }).trim();
+  } catch {
+    return null;
+  }
+}
+
+function detectTmuxInstallCommand(): string | null {
+  if (isMacOS()) {
+    try {
+      execSync("which brew", { stdio: "pipe" });
+      return "brew install tmux";
+    } catch {
+      return null;
+    }
+  }
+
+  try {
+    execSync("which apt-get", { stdio: "pipe" });
+    return "sudo apt-get install -y tmux";
+  } catch {
+    return null;
+  }
+}
+
+async function promptTmuxSetup(): Promise<void> {
+  if (isWindows()) {
+    p.log.warn(t("bot.windowsNoTwoWay"));
+    return;
+  }
+
+  const tmuxVersion = getTmuxVersion();
+  if (tmuxVersion) {
+    p.log.success(t("setup.tmuxDetected", { version: tmuxVersion }));
+    return;
+  }
+
+  const shouldInstall = await p.confirm({
+    message: t("setup.tmuxInstallPrompt"),
+    initialValue: true,
+  });
+
+  if (p.isCancel(shouldInstall) || !shouldInstall) {
+    p.log.info(t("setup.tmuxInstallSkipped"));
+    return;
+  }
+
+  const installCmd = detectTmuxInstallCommand();
+  if (!installCmd) {
+    p.log.warn(t("setup.tmuxInstallFailed"));
+    return;
+  }
+
+  const s = p.spinner();
+  s.start(installCmd);
+
+  try {
+    await runCommandAsync(installCmd);
+    s.stop(t("setup.tmuxInstallSuccess"));
+  } catch {
+    s.stop(t("setup.tmuxInstallFailed"));
+  }
+}
+
+function runCommandAsync(command: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn("sh", ["-c", command], { stdio: "pipe" });
+
+    let output = "";
+
+    child.stdout.on("data", (data: Buffer) => {
+      output += data.toString();
+    });
+
+    child.stderr.on("data", (data: Buffer) => {
+      output += data.toString();
+    });
+
+    child.on("close", (code: number | null) => {
+      if (code === 0) {
+        resolve(output);
+      } else {
+        reject(new Error(`Command failed with code ${code}`));
+      }
+    });
+
+    child.on("error", reject);
+  });
 }
