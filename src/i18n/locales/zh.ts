@@ -32,6 +32,7 @@ export const zh: TranslationKeys = {
       "另一个 ccpoke 已在端口 {port} 上运行\n\n  停止方法:\n    kill $(lsof -ti:{port})\n",
     twowayEnabled: "📱 双向聊天: 已启用",
     twowayDisabled: "📱 双向聊天: 已禁用 (无 tmux)",
+    windowsNoTwoWay: "双向聊天不可用 (tmux 不支持 Windows)",
   },
 
   setup: {
@@ -62,8 +63,14 @@ export const zh: TranslationKeys = {
     agentHookInstalled: "{agent} hook 已安装",
     agentHookAlreadyInstalled: "{agent} hook 已安装",
     agentHookUninstalled: "{agent} hook 已移除",
-    shellCompletionHint:
-      "Shell补全已安装到 {dir}\n  → zsh: 在 ~/.zshrc 中添加 `fpath=({dir} $fpath); autoload -Uz compinit && compinit`\n  → bash: 在 ~/.bashrc 中添加 `source {dir}/ccpoke.bash`",
+    shellCompletionAdded: "已将 Shell补全添加到 shell 配置",
+    shellCompletionAlreadyInstalled: "Shell补全已配置",
+    tmuxInstallPrompt: "安装 tmux 以支持双向聊天？",
+    tmuxDetected: "tmux {version} — 双向聊天就绪",
+    tmuxInstallSuccess: "tmux 安装成功",
+    tmuxInstallFailed:
+      "无法自动安装 tmux。请手动安装:\n  macOS: brew install tmux\n  Linux: sudo apt install tmux",
+    tmuxInstallSkipped: "跳过 tmux 安装 — 双向聊天已禁用，通知仍正常工作",
   },
 
   uninstall: {
@@ -165,6 +172,8 @@ export const zh: TranslationKeys = {
   versionCheck: {
     updateAvailable: "发现新版本！{current} → {latest}",
     runToUpdate: "运行 `{command}` 进行更新",
+    updatePrompt: "更新到 v{latest}？",
+    continueWithoutUpdate: "继续使用 v{current}",
   },
   tmux: {
     notAvailable: "未安装 tmux — 双向聊天已禁用，通知仍正常工作",

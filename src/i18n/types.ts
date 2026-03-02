@@ -29,6 +29,7 @@ export interface TranslationKeys {
     alreadyRunning: string;
     twowayEnabled: string;
     twowayDisabled: string;
+    windowsNoTwoWay: string;
   };
   setup: {
     intro: string;
@@ -57,7 +58,13 @@ export interface TranslationKeys {
     agentHookInstalled: string;
     agentHookAlreadyInstalled: string;
     agentHookUninstalled: string;
-    shellCompletionHint: string;
+    shellCompletionAdded: string;
+    shellCompletionAlreadyInstalled: string;
+    tmuxInstallPrompt: string;
+    tmuxDetected: string;
+    tmuxInstallSuccess: string;
+    tmuxInstallFailed: string;
+    tmuxInstallSkipped: string;
   };
   uninstall: {
     intro: string;
@@ -152,6 +159,8 @@ export interface TranslationKeys {
   versionCheck: {
     updateAvailable: string;
     runToUpdate: string;
+    updatePrompt: string;
+    continueWithoutUpdate: string;
   };
   tmux: {
     notAvailable: string;

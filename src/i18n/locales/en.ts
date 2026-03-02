@@ -33,6 +33,7 @@ export const en: TranslationKeys = {
       "another ccpoke is already running on port {port}\n\n  To stop it:\n    kill $(lsof -ti:{port})\n",
     twowayEnabled: "📱 2-way chat: enabled",
     twowayDisabled: "📱 2-way chat: disabled (no tmux)",
+    windowsNoTwoWay: "2-way chat is not supported (tmux is unavailable on Windows)",
   },
 
   setup: {
@@ -63,8 +64,14 @@ export const en: TranslationKeys = {
     agentHookInstalled: "{agent} hook installed",
     agentHookAlreadyInstalled: "{agent} hook already installed",
     agentHookUninstalled: "{agent} hook removed",
-    shellCompletionHint:
-      "Shell completions installed to {dir}\n  → zsh: add `fpath=({dir} $fpath); autoload -Uz compinit && compinit` to ~/.zshrc\n  → bash: add `source {dir}/ccpoke.bash` to ~/.bashrc",
+    shellCompletionAdded: "Shell completions added to shell config",
+    shellCompletionAlreadyInstalled: "Shell completions already configured",
+    tmuxInstallPrompt: "Install tmux for 2-way chat support?",
+    tmuxDetected: "tmux {version} — 2-way chat ready",
+    tmuxInstallSuccess: "tmux installed successfully",
+    tmuxInstallFailed:
+      "Failed to install tmux automatically. Install it manually:\n  macOS: brew install tmux\n  Linux: sudo apt install tmux",
+    tmuxInstallSkipped: "Skipped tmux install — 2-way chat disabled, notifications still work",
   },
 
   uninstall: {
@@ -166,6 +173,8 @@ export const en: TranslationKeys = {
   versionCheck: {
     updateAvailable: "Update available! {current} → {latest}",
     runToUpdate: "Run `{command}` to update",
+    updatePrompt: "Update to v{latest}?",
+    continueWithoutUpdate: "Continue with v{current}",
   },
   tmux: {
     notAvailable: "tmux not installed — 2-way chat disabled, notifications still work",

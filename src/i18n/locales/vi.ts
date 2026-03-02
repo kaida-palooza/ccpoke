@@ -33,6 +33,7 @@ export const vi: TranslationKeys = {
       "một ccpoke khác đang chạy trên port {port}\n\n  Để dừng nó:\n    kill $(lsof -ti:{port})\n",
     twowayEnabled: "📱 Chat 2 chiều: đã bật",
     twowayDisabled: "📱 Chat 2 chiều: tắt (không có tmux)",
+    windowsNoTwoWay: "Chat 2 chiều không khả dụng (tmux không hỗ trợ trên Windows)",
   },
 
   setup: {
@@ -63,8 +64,14 @@ export const vi: TranslationKeys = {
     agentHookInstalled: "Đã cài hook cho {agent}",
     agentHookAlreadyInstalled: "Hook cho {agent} đã được cài rồi",
     agentHookUninstalled: "Đã gỡ hook cho {agent}",
-    shellCompletionHint:
-      "Đã cài shell completions vào {dir}\n  → zsh: thêm `fpath=({dir} $fpath); autoload -Uz compinit && compinit` vào ~/.zshrc\n  → bash: thêm `source {dir}/ccpoke.bash` vào ~/.bashrc",
+    shellCompletionAdded: "Đã thêm shell completions vào shell config",
+    shellCompletionAlreadyInstalled: "Shell completions đã được cấu hình",
+    tmuxInstallPrompt: "Cài tmux để sử dụng tính năng chat 2 chiều?",
+    tmuxDetected: "tmux {version} — chat 2 chiều sẵn sàng",
+    tmuxInstallSuccess: "Đã cài tmux thành công",
+    tmuxInstallFailed:
+      "Không thể cài tmux tự động. Hãy cài thủ công:\n  macOS: brew install tmux\n  Linux: sudo apt install tmux",
+    tmuxInstallSkipped: "Bỏ qua cài tmux — chat 2 chiều tắt, notification vẫn hoạt động",
   },
 
   uninstall: {
@@ -166,6 +173,8 @@ export const vi: TranslationKeys = {
   versionCheck: {
     updateAvailable: "Có bản cập nhật mới! {current} → {latest}",
     runToUpdate: "Chạy `{command}` để cập nhật",
+    updatePrompt: "Cập nhật lên v{latest}?",
+    continueWithoutUpdate: "Tiếp tục với v{current}",
   },
   tmux: {
     notAvailable: "Chưa cài tmux — chat 2 chiều tắt, notification vẫn hoạt động",
