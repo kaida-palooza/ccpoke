@@ -50,6 +50,23 @@ export class TmuxSessionResolver implements ChatSessionResolver {
     return tmuxSessionId;
   }
 
+  resolveOrRegister(
+    agentSessionId: string,
+    projectName: string,
+    cwd: string | undefined,
+    tmuxTarget: string
+  ): string {
+    const existing = this.findByTmuxTarget(tmuxTarget);
+    if (existing) {
+      if (agentSessionId) this.cacheAgent(agentSessionId, existing);
+      return existing;
+    }
+    const syntheticId = `tmux-${tmuxTarget.replace(/[:.]/g, "-")}`;
+    this.sessionMap.register(syntheticId, tmuxTarget, projectName, cwd ?? "");
+    if (agentSessionId) this.cacheAgent(agentSessionId, syntheticId);
+    return syntheticId;
+  }
+
   onStopHook(sessionId: string, model?: string): void {
     this.stateManager.onStopHook(sessionId, model);
   }

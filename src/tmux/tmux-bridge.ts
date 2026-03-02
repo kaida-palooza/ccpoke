@@ -108,13 +108,41 @@ export class TmuxBridge {
     }
   }
 
-  createWindow(sessionName: string, cwd: string): string {
-    const sess = escapeShellArg(`${sessionName}:`);
+  createPane(sessionName: string, cwd: string): string {
     const dir = escapeShellArg(cwd);
-    return execSync(
-      `tmux new-window -t ${sess} -c ${dir} -P -F '#{session_name}:#{window_index}.#{pane_index}'`,
+
+    if (!this.hasRunningSession(sessionName)) {
+      const name = escapeShellArg(sessionName);
+      return execSync(
+        `tmux new-session -d -s ${name} -c ${dir} -P -F '#{session_name}:#{window_index}.#{pane_index}'`,
+        { encoding: "utf-8", stdio: "pipe", timeout: 5000 }
+      ).trim();
+    }
+
+    const target = escapeShellArg(`${sessionName}:0`);
+    const paneTarget = execSync(
+      `tmux split-window -t ${target} -c ${dir} -P -F '#{session_name}:#{window_index}.#{pane_index}'`,
       { encoding: "utf-8", stdio: "pipe", timeout: 5000 }
     ).trim();
+
+    execSync(`tmux select-layout -t ${target} tiled`, {
+      stdio: "pipe",
+      timeout: 3000,
+    });
+
+    return paneTarget;
+  }
+
+  private hasRunningSession(sessionName: string): boolean {
+    try {
+      execSync(`tmux has-session -t ${escapeShellArg(sessionName)}`, {
+        stdio: "pipe",
+        timeout: 3000,
+      });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   killPane(target: string): void {

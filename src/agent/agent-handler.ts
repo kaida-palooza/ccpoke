@@ -80,6 +80,16 @@ export class AgentHandler {
       logDebug(`[Stop:resolved] chatSessionId=${chatSessionId ?? "NONE"}`);
     }
 
+    if (!chatSessionId && result.tmuxTarget && this.chatResolver) {
+      chatSessionId = this.chatResolver.resolveOrRegister(
+        result.agentSessionId ?? "",
+        result.projectName,
+        result.cwd,
+        result.tmuxTarget
+      );
+      logDebug(`[Stop:fallback] registered ${chatSessionId} from tmuxTarget=${result.tmuxTarget}`);
+    }
+
     const data: NotificationData = {
       agent: provider.name,
       agentDisplayName: provider.displayName,

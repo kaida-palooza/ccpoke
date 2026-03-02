@@ -19,7 +19,7 @@ import { extractProseSnippet } from "../../utils/markdown.js";
 import { formatDuration, formatModelName, formatTokenCount } from "../../utils/stats-format.js";
 import type { NotificationChannel, NotificationData } from "../types.js";
 import { AskQuestionHandler } from "./ask-question-handler.js";
-import { escapeMarkdownV2 } from "./escape-markdown.js";
+import { escapeMarkdownV2, isInlineMessage, markdownToTelegramV2 } from "./escape-markdown.js";
 import { PendingReplyStore } from "./pending-reply-store.js";
 import { PermissionRequestHandler } from "./permission-request-handler.js";
 import { formatProjectList } from "./project-list.js";
@@ -144,8 +144,12 @@ export class TelegramChannel implements NotificationChannel {
     parts.push(`${titleLine}\n${metaLine}`);
 
     if (data.responseSummary) {
-      const snippet = extractProseSnippet(data.responseSummary, 150);
-      parts.push(escapeMarkdownV2(snippet + "..."));
+      if (isInlineMessage(data.responseSummary)) {
+        parts.push(markdownToTelegramV2(data.responseSummary.trim()));
+      } else {
+        const snippet = extractProseSnippet(data.responseSummary, 150);
+        parts.push(escapeMarkdownV2(snippet + "..."));
+      }
     } else {
       parts.push(escapeMarkdownV2("✅ Task done"));
     }
@@ -530,7 +534,7 @@ export class TelegramChannel implements NotificationChannel {
     try {
       const startCommand = resolveAgentStartCommand(agentKey);
       const tmuxSession = this.getTmuxSessionName();
-      const paneTarget = this.tmuxBridge.createWindow(tmuxSession, project.path);
+      const paneTarget = this.tmuxBridge.createPane(tmuxSession, project.path);
       this.tmuxBridge.sendKeys(paneTarget, startCommand, ["Enter"]);
 
       if (agentKey === AgentName.Cursor) {
