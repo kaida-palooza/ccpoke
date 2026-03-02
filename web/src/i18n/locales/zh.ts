@@ -22,10 +22,8 @@ export const zh: LocaleDict = {
   featuresTitle: "不仅仅是通知",
   featurePushTitle: "推送通知",
   featurePushDesc: "AI 代理完成 → 立即推送通知。无轮询，无延迟。",
-  featurePushBadge: "基于 Hook",
   feature2wayTitle: "双向交互",
   feature2wayDesc: "从 Telegram 与 AI 代理聊天。查看活跃会话、发送提示、回答问题 — 无需触碰电脑。",
-  feature2wayBadge: "Claude Code",
   featureMultiSessionTitle: "多会话",
   featureMultiSessionDesc: "同时管理多个 AI 代理会话 — 切换会话、并行监控、每会话独立上下文。",
 

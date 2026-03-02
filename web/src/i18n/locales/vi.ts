@@ -22,10 +22,8 @@ export const vi: LocaleDict = {
   featuresTitle: "Không chỉ thông báo",
   featurePushTitle: "Thông báo đẩy",
   featurePushDesc: "AI agent xong → thông báo đẩy ngay. Không polling, không delay.",
-  featurePushBadge: "Dựa trên hook",
   feature2wayTitle: "Tương tác 2 chiều",
   feature2wayDesc: "Chat với AI agent từ Telegram. Xem sessions đang hoạt động, gửi prompt, trả lời câu hỏi — không cần chạm máy tính.",
-  feature2wayBadge: "Claude Code",
   featureMultiSessionTitle: "Đa phiên",
   featureMultiSessionDesc: "Quản lý nhiều phiên AI agent cùng lúc — chuyển đổi giữa các sessions, giám sát song song, context riêng từng session.",
 

@@ -11,31 +11,22 @@ const { locale } = Astro.props;
 const features: {
   titleKey: string;
   descKey: string;
-  badgeKey?: string;
   bg: string;
   text: string;
-  badgeBg?: string;
-  badgeText?: string;
   icon: IconName;
 }[] = [
   {
     titleKey: "featurePushTitle",
     descKey: "featurePushDesc",
-    badgeKey: "featurePushBadge",
     bg: "bg-accent-light",
     text: "text-accent",
-    badgeBg: "bg-accent-light",
-    badgeText: "text-accent",
     icon: "zap",
   },
   {
     titleKey: "feature2wayTitle",
     descKey: "feature2wayDesc",
-    badgeKey: "feature2wayBadge",
     bg: "bg-plum-light",
     text: "text-plum",
-    badgeBg: "bg-plum-light",
-    badgeText: "text-plum",
     icon: "repeat",
   },
   {
@@ -61,13 +52,8 @@ const features: {
           <span class="w-[22px] h-[22px]" set:html={icons[feat.icon]} />
         </div>
         <div>
-          <h3 class="text-base font-bold mb-1 flex items-center gap-2">
-            <span>{ts(locale, feat.titleKey)}</span>
-            {feat.badgeKey && (
-              <span class:list={["text-[0.6rem] font-bold px-[7px] py-0.5 rounded uppercase tracking-wider", feat.badgeBg, feat.badgeText]}>
-                {ts(locale, feat.badgeKey)}
-              </span>
-            )}
+          <h3 class="text-base font-bold mb-1">
+            {ts(locale, feat.titleKey)}
           </h3>
           <p class="text-[0.88rem] text-txt-2 leading-relaxed">{ts(locale, feat.descKey)}</p>
         </div>

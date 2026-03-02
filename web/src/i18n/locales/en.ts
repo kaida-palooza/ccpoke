@@ -20,10 +20,8 @@ const en = {
   featuresTitle: "More than notifications",
   featurePushTitle: "Push notification",
   featurePushDesc: "AI agent done → notification pushed instantly. No polling, no delay.",
-  featurePushBadge: "Hook-based",
   feature2wayTitle: "Two-way interaction",
   feature2wayDesc: "Chat with your AI agent from Telegram. View active sessions, send prompts, answer questions — all without touching your laptop.",
-  feature2wayBadge: "Claude Code",
   featureMultiSessionTitle: "Multi-session",
   featureMultiSessionDesc: "Manage multiple AI agent sessions simultaneously — switch between sessions, parallel monitoring, per-session context.",
 

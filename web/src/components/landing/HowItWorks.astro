@@ -106,7 +106,16 @@ function drawFlowPaths() {
     if (prefersReducedMotion) return;
 
     const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    group.setAttribute("opacity", "0.85");
+    group.setAttribute("opacity", "0");
+
+    const fadeIn = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+    fadeIn.setAttribute("attributeName", "opacity");
+    fadeIn.setAttribute("from", "0");
+    fadeIn.setAttribute("to", "0.85");
+    fadeIn.setAttribute("dur", "0.01s");
+    fadeIn.setAttribute("begin", `${delay}s`);
+    fadeIn.setAttribute("fill", "freeze");
+    group.appendChild(fadeIn);
 
     const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     glow.setAttribute("r", "4");
