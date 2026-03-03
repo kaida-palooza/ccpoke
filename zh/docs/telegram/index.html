@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Telegram — ccpoke — 文档</title><meta name="description" content="ccpoke 快速入门指南 — 安装、工作流程和技巧。"><link rel="alternate" hreflang="en" href="/ccpoke/docs/telegram"><link rel="alternate" hreflang="vi" href="/ccpoke/vi/docs/telegram"><link rel="alternate" hreflang="zh-CN" href="/ccpoke/zh/docs/telegram"><link rel="icon" type="image/svg+xml" sizes="any" href="/ccpoke/favicon.svg"><link rel="apple-touch-icon" href="/ccpoke/favicon.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><script>
+    (function() {
+      var saved = localStorage.getItem("ccpoke-theme");
+      var theme = saved || "dark";
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script><script>(function(){const base = "/ccpoke/";
+const locale = "zh";
+
+    (function() {
+      var saved = localStorage.getItem("ccpoke-locale");
+      if (!saved || saved === locale) return;
+      var supported = ["en", "vi", "zh"];
+      if (supported.indexOf(saved) === -1) return;
+
+      var path = location.pathname.replace(base, "/").replace(/^\/[a-z]{2}\//, "/");
+      var target = saved === "en"
+        ? base + (path === "/" ? "" : path.slice(1))
+        : base + saved + path;
+
+      if (!target.endsWith("/")) target += "/";
+      window.location.replace(target + location.search);
+    })();
+  })();</script><link rel="stylesheet" href="/ccpoke/_astro/cli.DuNuYPD7.css">
+<style>.docs-content__subsection[data-astro-cid-22a7vht5]{margin-top:1.25rem}
+</style></head> <body class="min-h-screen"> <nav class="docs-navbar" id="docsNavbar"> <div class="docs-navbar__inner"> <a href="/ccpoke/zh/" class="docs-navbar__logo"> <span class="docs-navbar__logo-icon"><svg viewBox="3 0 30 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="9" cy="4.5" r="3" fill="#D97757"/>
+  <circle cx="27" cy="4.5" r="3" fill="#D97757"/>
+  <path d="M5.5 19 L5.5 12.5 C5.5 6.5 10.5 2.5 18 2.5 C25.5 2.5 30.5 6.5 30.5 12.5 L30.5 19 C30.5 21.5 28.5 23.5 26 23.5 L10 23.5 C7.5 23.5 5.5 21.5 5.5 19Z" fill="#D97757"/>
+  <path d="M13 12.5 L15 14.5 L13 16.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M23 12.5 L21 14.5 L23 16.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</span> <span class="docs-navbar__logo-text">ccpoke <span class="docs-navbar__logo-label">文档</span></span> </a> <div class="docs-navbar__tabs" id="docsNavTabs"> <a href="/ccpoke/zh/docs/" class="docs-navbar__tab"> 概述 </a><a href="/ccpoke/zh/docs/cli/" class="docs-navbar__tab"> CLI </a><a href="/ccpoke/zh/docs/telegram/" class="docs-navbar__tab docs-navbar__tab--active"> Telegram </a><a href="/ccpoke/zh/docs/config/" class="docs-navbar__tab"> 配置 </a> </div> <div class="docs-navbar__actions"> <button class="theme-toggle" id="docsThemeToggle" type="button" aria-label="Toggle theme"> <span class="theme-toggle__sun"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+  <circle cx="12" cy="12" r="3.8"/>
+  <circle cx="11" cy="11" r="1.4" opacity="0.15" fill="none" stroke="currentColor" stroke-width="0.4"/>
+  <path d="M12 0.5 L12.7 7.5 L12 6 L11.3 7.5 Z"/>
+  <path d="M12 23.5 L11.3 16.5 L12 18 L12.7 16.5 Z"/>
+  <path d="M0.5 12 L7.5 11.3 L6 12 L7.5 12.7 Z"/>
+  <path d="M23.5 12 L16.5 12.7 L18 12 L16.5 11.3 Z"/>
+  <path d="M19.5 4.5 L15.5 7.6 L16.5 8.6 Z" opacity="0.8"/>
+  <path d="M4.5 4.5 L8.5 7.6 L7.5 8.6 Z" opacity="0.8"/>
+  <path d="M19.5 19.5 L16.5 15.4 L15.5 16.4 Z" opacity="0.8"/>
+  <path d="M4.5 19.5 L7.5 15.4 L8.5 16.4 Z" opacity="0.8"/>
+</svg>
+</span> <span class="theme-toggle__moon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor" opacity="0.1"/>
+  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  <circle cx="10" cy="10" r="1" fill="currentColor" opacity="0.25"/>
+  <circle cx="7.5" cy="14" r="0.7" fill="currentColor" opacity="0.18"/>
+  <circle cx="13" cy="15.5" r="1.2" fill="currentColor" opacity="0.2"/>
+  <path d="M19.5 4l.5 1.5L21.5 6l-1.5.5L19.5 8l-.5-1.5L17.5 6l1.5-.5z" fill="currentColor" opacity="0.5" stroke="none"/>
+  <path d="M22 10.5l.3.8.8.3-.8.3-.3.8-.3-.8-.8-.3.8-.3z" fill="currentColor" opacity="0.35" stroke="none"/>
+</svg>
+</span> </button> <div class="lang-dropdown" id="docsLangDropdown"> <button class="lang-trigger" id="docsLangTrigger" type="button" aria-label="语言"> <span id="docsLangCurrent">中文</span> <svg viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+ </button> <div class="lang-menu"> <a href="/ccpoke/docs/telegram/" class="lang-option" data-locale="en"> EN </a><a href="/ccpoke/vi/docs/telegram/" class="lang-option" data-locale="vi"> VI </a><a href="/ccpoke/zh/docs/telegram/" class="lang-option active" data-locale="zh"> 中文 </a> </div> </div> <a href="https://github.com/kaida-palooza/ccpoke" target="_blank" rel="noopener" class="docs-navbar__github" aria-label="GitHub"> <span><svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6.02 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3"/>
+</svg>
+</span> </a> </div> </div> </nav> <script type="module" src="/ccpoke/_astro/DocsNavbar.astro_astro_type_script_index_0_lang.CrziiKa5.js"></script>  <div class="docs-layout"> <aside class="docs-sidebar" id="docsSidebar"> <nav class="docs-sidebar__nav"> <div class="docs-sidebar__group"> <a href="/ccpoke/zh/docs/" class="docs-sidebar__link docs-sidebar__link--top" data-sidebar-id="overview"> 概述 </a>  </div><div class="docs-sidebar__group"> <a href="/ccpoke/zh/docs/cli/" class="docs-sidebar__link docs-sidebar__link--parent" data-sidebar-id="cli"> CLI 参考 </a> <div class="docs-sidebar__children"> <a href="/ccpoke/zh/docs/cli/#cli-run" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="cli-run"> ccpoke </a><a href="/ccpoke/zh/docs/cli/#cli-setup" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="cli-setup"> setup </a><a href="/ccpoke/zh/docs/cli/#cli-project" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="cli-project"> project </a><a href="/ccpoke/zh/docs/cli/#cli-update" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="cli-update"> update </a><a href="/ccpoke/zh/docs/cli/#cli-uninstall" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="cli-uninstall"> uninstall </a><a href="/ccpoke/zh/docs/cli/#cli-help" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="cli-help"> help </a> </div> </div><div class="docs-sidebar__group"> <a href="/ccpoke/zh/docs/telegram/" class="docs-sidebar__link docs-sidebar__link--parent docs-sidebar__link--parent-active" data-sidebar-id="telegram"> Telegram </a> <div class="docs-sidebar__children"> <a href="#tg-commands" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="tg-commands"> Bot 命令 </a><a href="#tg-notifications" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="tg-notifications"> 通知 </a><a href="#tg-chat" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="tg-chat"> 双向聊天 </a><a href="#tg-permissions" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="tg-permissions"> 权限处理 </a><a href="#tg-questions" class="docs-sidebar__link docs-sidebar__link--child" data-sidebar-id="tg-questions"> 问答 </a> </div> </div><div class="docs-sidebar__group"> <a href="/ccpoke/zh/docs/config/" class="docs-sidebar__link docs-sidebar__link--top" data-sidebar-id="config"> 配置 </a>  </div> </nav> </aside> <script type="module">const d=document.querySelectorAll("[data-sidebar-id]"),o=new Set,s=[];d.forEach(c=>{const e=c.dataset.sidebarId,t=document.getElementById(e);t&&(o.add(e),s.push(t))});function l(){if(window.scrollY+window.innerHeight>=document.documentElement.scrollHeight-10&&s.length>0){const t=s[s.length-1].id;d.forEach(i=>{const a=i.dataset.sidebarId;o.has(a)&&i.classList.toggle("docs-sidebar__link--active",a===t)});return}let e=null;for(const t of s)t.getBoundingClientRect().top<=92&&(e=t.id);!e&&s.length>0&&(e=s[0].id),e&&d.forEach(t=>{const i=t.dataset.sidebarId;o.has(i)&&t.classList.toggle("docs-sidebar__link--active",i===e)})}let n=!1;document.addEventListener("scroll",()=>{n||(requestAnimationFrame(()=>{l(),n=!1}),n=!0)},{passive:!0});l();</script> <button class="docs-layout__sidebar-toggle" id="docsSidebarToggle" type="button" aria-label="Toggle sidebar"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <line x1="3" y1="12" x2="21" y2="12"></line> <line x1="3" y1="6" x2="21" y2="6"></line> <line x1="3" y1="18" x2="21" y2="18"></line> </svg> </button> <div class="docs-layout__overlay" id="docsSidebarOverlay"></div> <main class="docs-layout__main">  <article class="docs-content" data-astro-cid-22a7vht5> <nav class="docs-breadcrumb" data-astro-cid-22a7vht5> <a href="/ccpoke/zh/docs/" data-astro-cid-22a7vht5>Docs</a> <span class="docs-breadcrumb__sep" data-astro-cid-22a7vht5>›</span> Telegram 使用 </nav> <section class="docs-content__section" data-astro-cid-22a7vht5> <h1 data-astro-cid-22a7vht5>Telegram 使用</h1> <p data-astro-cid-22a7vht5>设置 ccpoke 后你在 Telegram 上会看到和做的一切。</p> <div id="tg-commands" class="docs-content__subsection" data-astro-cid-22a7vht5> <h3 data-astro-cid-22a7vht5>Bot 命令</h3> <p data-astro-cid-22a7vht5>设置后有三个命令：</p> <div class="docs-config-table-wrap" data-astro-cid-22a7vht5> <table class="docs-config-table" data-astro-cid-22a7vht5> <thead data-astro-cid-22a7vht5> <tr data-astro-cid-22a7vht5> <th data-astro-cid-22a7vht5>命令</th> <th data-astro-cid-22a7vht5>说明</th> </tr> </thead> <tbody data-astro-cid-22a7vht5> <tr data-astro-cid-22a7vht5> <td data-astro-cid-22a7vht5>/start</td> <td data-astro-cid-22a7vht5>将 bot 连接到聊天。设置时运行一次。</td> </tr> <tr data-astro-cid-22a7vht5> <td data-astro-cid-22a7vht5>/sessions</td> <td data-astro-cid-22a7vht5>查看所有正在运行的 AI 代理会话。选择一个进行聊天或关闭。</td> </tr> <tr data-astro-cid-22a7vht5> <td data-astro-cid-22a7vht5>/projects</td> <td data-astro-cid-22a7vht5>查看项目列表。选择一个项目启动新的代理会话。</td> </tr> </tbody> </table> </div> </div> <div id="tg-notifications" class="docs-content__subsection" data-astro-cid-22a7vht5> <div class="interact-block"> <p class="interact-block__title">通知</p> <p class="interact-block__trigger">当 AI 代理完成任务时（stop hook 触发）</p> <p class="interact-block__desc">你会收到推送通知：项目名称、代理类型和处理时间、任务摘要、token 统计（输入/输出）、模型名称。两个按钮：&quot;查看详情&quot; 打开 Mini App 查看完整响应，&quot;聊天&quot; 发送后续提示。</p> <pre class="interact-block__demo">📦 my-app
+🐾 Claude Code · ⏱ 25s
+
+为设置页面添加深色模式切换并检测系统偏好。
+
+📊 In: 104.4k · Out: 947
+
+🤖 Opus 4.6
+
+[查看详情]  [聊天]</pre>  </div> </div> <div id="tg-chat" class="docs-content__subsection" data-astro-cid-22a7vht5> <div class="interact-block"> <p class="interact-block__title">双向聊天</p> <p class="interact-block__trigger">点击通知上的 &quot;聊天&quot; 或从 /sessions 选择会话</p> <p class="interact-block__desc">必须先点击 &quot;Chat&quot; 按钮 — 这告诉 ccpoke 消息要发送到哪个代理会话。两种入口：
+(1) 任务通知上的 Chat 按钮
+(2) /sessions → 选择会话 → Chat
+点击后，Telegram 打开回复框。输入提示，ccpoke 通过 tmux send-keys 注入目标代理。</p> <pre class="interact-block__demo">通过 /sessions：
+
+活跃会话
+🟢 my-app · opus-4.6
+🟢 gia-pha
+
+→ 选择 &quot;gia-pha&quot;
+
+gia-pha
+[💬 聊天]  [🗑 关闭]
+
+→ 点击聊天
+
+💬 gia-pha
+在下方输入消息 ↓
+&gt; 总结最近的变更
+
+✓ 已发送到会话</pre>  </div> <p class="docs-warning" data-astro-cid-22a7vht5> <svg class="docs-warning__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-22a7vht5> <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" data-astro-cid-22a7vht5></path> <line x1="12" y1="9" x2="12" y2="13" data-astro-cid-22a7vht5></line> <line x1="12" y1="17" x2="12.01" y2="17" data-astro-cid-22a7vht5></line> </svg> <span data-astro-cid-22a7vht5>需要 tmux（macOS / Linux）。Windows 暂不支持双向聊天。</span> </p> </div> <div id="tg-permissions" class="docs-content__subsection" data-astro-cid-22a7vht5> <div class="interact-block"> <p class="interact-block__title">权限处理</p> <p class="interact-block__trigger">当代理需要权限时（写入文件、执行 bash 命令等）</p> <p class="interact-block__desc">代理暂停并发送通知，包含工具名称和摘要。点击 &quot;允许&quot; 批准或 &quot;拒绝&quot;。ccpoke 将 &quot;y&quot; 或 &quot;n&quot; 注入代理。10 分钟后过期。</p> <pre class="interact-block__demo">🔐 权限请求
+
+工具: bash
+命令: rm -rf node_modules &amp;&amp; npm install
+
+[✅ 允许]  [❌ 拒绝]</pre>  </div> </div> <div id="tg-questions" class="docs-content__subsection" data-astro-cid-22a7vht5> <div class="interact-block"> <p class="interact-block__title">回答问题</p> <p class="interact-block__trigger">当代理使用 AskUserQuestion 工具</p> <p class="interact-block__desc">两种模式：
+(1) 单选/多选 — 出现内联按钮，选择一个或切换多个 + 确认。
+(2) 开放式 — 打开文本回复框，自由输入答案。</p> <pre class="interact-block__demo">问题 1/1 [Debug]
+
+这个项目应该使用哪个测试框架？
+
+1. Jest — 行业标准，拥有广泛支持的生态系统和成熟的工具链
+2. Vitest — 快速，Vite 原生单元测试运行器，支持 HMR
+3. Mocha — 灵活成熟，拥有丰富的插件支持
+
+点击选择
+
+[Jest]
+[Vitest]
+[Mocha]
+[其他]</pre>  </div> </div> </section> <nav class="docs-pagination"> <a href="/ccpoke/zh/docs/cli/" class="docs-pagination__link docs-pagination__link--prev"> <span class="docs-pagination__label">上一页</span> <span class="docs-pagination__title">CLI 参考</span> </a> <a href="/ccpoke/zh/docs/config/" class="docs-pagination__link docs-pagination__link--next"> <span class="docs-pagination__label">下一页</span> <span class="docs-pagination__title">配置</span> </a> </nav> </article>    </main> <aside class="docs-toc" id="docsToc"> <p class="docs-toc__title">本页目录</p> <nav class="docs-toc__list"> <a href="#tg-commands" class="docs-toc__link" data-toc-id="tg-commands"> Bot 命令 </a><a href="#tg-notifications" class="docs-toc__link" data-toc-id="tg-notifications"> 通知 </a><a href="#tg-chat" class="docs-toc__link" data-toc-id="tg-chat"> 双向聊天 </a><a href="#tg-permissions" class="docs-toc__link" data-toc-id="tg-permissions"> 权限处理 </a><a href="#tg-questions" class="docs-toc__link" data-toc-id="tg-questions"> 问答 </a> </nav> </aside> <script type="module">const o=document.querySelectorAll("[data-toc-id]"),s=Array.from(o).map(t=>t.dataset.tocId),a=s.map(t=>document.getElementById(t)).filter(Boolean),r=new IntersectionObserver(t=>{t.forEach(e=>{e.isIntersecting&&(o.forEach(c=>c.classList.remove("docs-toc__link--active")),document.querySelector(`[data-toc-id="${e.target.id}"]`)?.classList.add("docs-toc__link--active"))})},{rootMargin:"-80px 0px -60% 0px",threshold:0});a.forEach(t=>r.observe(t));</script> </div> <button class="docs-scroll-top" id="docsScrollTop" type="button" aria-label="Scroll to top"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <polyline points="18 15 12 9 6 15"></polyline> </svg> </button> <script type="module">const d=document.getElementById("docsSidebarToggle"),s=document.getElementById("docsSidebarOverlay"),c=document.querySelector(".docs-sidebar");function a(){c?.classList.add("docs-sidebar--open"),s?.classList.add("docs-layout__overlay--visible")}function r(){c?.classList.remove("docs-sidebar--open"),s?.classList.remove("docs-layout__overlay--visible")}d?.addEventListener("click",a);s?.addEventListener("click",r);c?.querySelectorAll("a").forEach(e=>{e.addEventListener("click",r)});const t=document.getElementById("docsScrollTop");let o=!1;document.addEventListener("scroll",()=>{o||(requestAnimationFrame(()=>{t&&t.classList.toggle("docs-scroll-top--visible",window.scrollY>400),o=!1}),o=!0)},{passive:!0});t?.addEventListener("click",()=>{window.scrollTo({top:0,behavior:"smooth"})});document.querySelectorAll("[data-copy-target]").forEach(e=>{e.addEventListener("click",()=>{const l=e.closest(".docs-terminal-wrap")?.querySelector("pre");if(!l)return;const i=l.textContent??"";navigator.clipboard.writeText(i).then(()=>{e.classList.add("docs-terminal-copy--copied"),setTimeout(()=>e.classList.remove("docs-terminal-copy--copied"),1500)})})});</script>  </body></html>

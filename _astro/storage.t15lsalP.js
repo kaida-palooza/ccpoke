@@ -1,0 +1,1 @@
+const t={locale:"ccpoke-locale",tunnelUrl:"ccpoke_tunnel_url",theme:"ccpoke-theme"};function o(e){try{return localStorage.getItem(t[e])}catch{return null}}function l(e,c){try{localStorage.setItem(t[e],c)}catch{}}export{o as g,l as s};
