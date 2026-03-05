@@ -1,0 +1,24 @@
+---
+import DocsBaseLayout from "../../components/docs/DocsBaseLayout.astro";
+import DocsLayout from "../../components/docs/DocsLayout.astro";
+import DocsToc from "../../components/docs/DocsToc.astro";
+import DocsDiscordPage from "../../components/docs/pages/DocsDiscordPage.astro";
+import { ts, type Locale } from "../../i18n";
+
+const locale: Locale = "en";
+
+const tocItems = [
+  { id: "dc-commands", label: ts(locale, "docsSidebarDcCommands") },
+  { id: "dc-notifications", label: ts(locale, "docsSidebarDcNotifications") },
+  { id: "dc-chat", label: ts(locale, "docsSidebarDcChat") },
+  { id: "dc-permissions", label: ts(locale, "docsSidebarDcPermissions") },
+  { id: "dc-questions", label: ts(locale, "docsSidebarDcQuestions") },
+];
+---
+
+<DocsBaseLayout locale={locale} currentPage="discord" title={`Discord — ${ts(locale, "docsTitle")}`}>
+  <DocsLayout locale={locale} currentPage="discord">
+    <DocsDiscordPage locale={locale} />
+    <DocsToc locale={locale} items={tocItems} slot="toc" />
+  </DocsLayout>
+</DocsBaseLayout>

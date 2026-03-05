@@ -44,6 +44,13 @@ const breadcrumbHref = locale === DEFAULT_LOCALE ? `${base}docs/` : `${base}${lo
       terminal={ts(locale, "docsCliProjectTerm")}
     />
     <CommandBlock
+      sectionId="cli-channel"
+      command="ccpoke channel"
+      description={ts(locale, "docsCliChannelDesc")}
+      whenToUse={ts(locale, "docsCliChannelWhen")}
+      terminal={ts(locale, "docsCliChannelTerm")}
+    />
+    <CommandBlock
       sectionId="cli-update"
       command="ccpoke update"
       description={ts(locale, "docsCliUpdateDesc")}

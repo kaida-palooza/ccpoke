@@ -2,7 +2,7 @@
 import DocsBaseLayout from "../../../components/docs/DocsBaseLayout.astro";
 import DocsLayout from "../../../components/docs/DocsLayout.astro";
 import DocsToc from "../../../components/docs/DocsToc.astro";
-import DocsCliPage from "../../../components/docs/pages/DocsCliPage.astro";
+import DocsDiscordPage from "../../../components/docs/pages/DocsDiscordPage.astro";
 import { ts, SUPPORTED_LOCALES, DEFAULT_LOCALE, type Locale } from "../../../i18n";
 
 export function getStaticPaths() {
@@ -14,19 +14,17 @@ export function getStaticPaths() {
 const locale = (Astro.props.locale ?? DEFAULT_LOCALE) as Locale;
 
 const tocItems = [
-  { id: "cli-run", label: "ccpoke" },
-  { id: "cli-setup", label: "setup" },
-  { id: "cli-project", label: "project" },
-  { id: "cli-channel", label: "channel" },
-  { id: "cli-update", label: "update" },
-  { id: "cli-uninstall", label: "uninstall" },
-  { id: "cli-help", label: "help" },
+  { id: "dc-commands", label: ts(locale, "docsSidebarDcCommands") },
+  { id: "dc-notifications", label: ts(locale, "docsSidebarDcNotifications") },
+  { id: "dc-chat", label: ts(locale, "docsSidebarDcChat") },
+  { id: "dc-permissions", label: ts(locale, "docsSidebarDcPermissions") },
+  { id: "dc-questions", label: ts(locale, "docsSidebarDcQuestions") },
 ];
 ---
 
-<DocsBaseLayout locale={locale} currentPage="cli" title={`CLI Reference — ${ts(locale, "docsTitle")}`}>
-  <DocsLayout locale={locale} currentPage="cli">
-    <DocsCliPage locale={locale} />
+<DocsBaseLayout locale={locale} currentPage="discord" title={`Discord — ${ts(locale, "docsTitle")}`}>
+  <DocsLayout locale={locale} currentPage="discord">
+    <DocsDiscordPage locale={locale} />
     <DocsToc locale={locale} items={tocItems} slot="toc" />
   </DocsLayout>
 </DocsBaseLayout>

@@ -1,0 +1,58 @@
+---
+import { ts, DEFAULT_LOCALE, type Locale } from "../../../i18n";
+import InteractionBlock from "../InteractionBlock.astro";
+import DocsPagination from "../DocsPagination.astro";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const breadcrumbHref = locale === DEFAULT_LOCALE ? `${base}docs/` : `${base}${locale}/docs/`;
+---
+
+<article class="docs-content">
+  <nav class="docs-breadcrumb">
+    <a href={breadcrumbHref}>Docs</a>
+    <span class="docs-breadcrumb__sep">›</span>
+    {ts(locale, "docsSlackTitle")}
+  </nav>
+  <section class="docs-content__section">
+    <h1>{ts(locale, "docsSlackTitle")}</h1>
+    <p>{ts(locale, "docsSlackDesc")}</p>
+
+    <div id="slk-notifications" class="docs-content__subsection">
+      <InteractionBlock
+        title={ts(locale, "docsSlkNotificationsTitle")}
+        trigger={ts(locale, "docsSlkNotificationsTrigger")}
+        description={ts(locale, "docsSlkNotificationsDesc")}
+        demo={ts(locale, "docsSlkNotificationsDemo")}
+      />
+    </div>
+
+    <div class="docs-content__subsection">
+      <h3>{ts(locale, "docsSlkLimitationsTitle")}</h3>
+      <p class="docs-warning">
+        <svg class="docs-warning__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>{ts(locale, "docsSlkLimitationsDesc")}</span>
+      </p>
+    </div>
+  </section>
+
+  <DocsPagination
+    locale={locale}
+    prev={{ page: "discord", labelKey: "docsSidebarDiscord" }}
+    next={{ page: "config", labelKey: "docsSidebarConfig" }}
+  />
+</article>
+
+<style>
+  .docs-content__subsection {
+    margin-top: 1.25rem;
+  }
+</style>

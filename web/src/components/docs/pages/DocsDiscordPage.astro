@@ -1,0 +1,106 @@
+---
+import { ts, DEFAULT_LOCALE, type Locale } from "../../../i18n";
+import InteractionBlock from "../InteractionBlock.astro";
+import DocsPagination from "../DocsPagination.astro";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const breadcrumbHref = locale === DEFAULT_LOCALE ? `${base}docs/` : `${base}${locale}/docs/`;
+---
+
+<article class="docs-content">
+  <nav class="docs-breadcrumb">
+    <a href={breadcrumbHref}>Docs</a>
+    <span class="docs-breadcrumb__sep">›</span>
+    {ts(locale, "docsDiscordTitle")}
+  </nav>
+  <section class="docs-content__section">
+    <h1>{ts(locale, "docsDiscordTitle")}</h1>
+    <p>{ts(locale, "docsDiscordDesc")}</p>
+
+    <div id="dc-commands" class="docs-content__subsection">
+      <h3>{ts(locale, "docsDcCommandsTitle")}</h3>
+      <p>{ts(locale, "docsDcCommandsDesc")}</p>
+      <div class="docs-config-table-wrap">
+        <table class="docs-config-table">
+          <thead>
+            <tr>
+              <th>{ts(locale, "docsDcCommandHeader")}</th>
+              <th>{ts(locale, "docsConfigDescHeader")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{ts(locale, "docsDcCmdSessions")}</td>
+              <td>{ts(locale, "docsDcCmdSessionsDesc")}</td>
+            </tr>
+            <tr>
+              <td>{ts(locale, "docsDcCmdProjects")}</td>
+              <td>{ts(locale, "docsDcCmdProjectsDesc")}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="dc-notifications" class="docs-content__subsection">
+      <InteractionBlock
+        title={ts(locale, "docsDcNotificationsTitle")}
+        trigger={ts(locale, "docsDcNotificationsTrigger")}
+        description={ts(locale, "docsDcNotificationsDesc")}
+        demo={ts(locale, "docsDcNotificationsDemo")}
+      />
+    </div>
+
+    <div id="dc-chat" class="docs-content__subsection">
+      <InteractionBlock
+        title={ts(locale, "docsDcChatTitle")}
+        trigger={ts(locale, "docsDcChatTrigger")}
+        description={ts(locale, "docsDcChatDesc")}
+        demo={ts(locale, "docsDcChatDemo")}
+      />
+      <p class="docs-warning">
+        <svg class="docs-warning__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <span>{ts(locale, "docsDcChatRequirement")}</span>
+      </p>
+    </div>
+
+    <div id="dc-permissions" class="docs-content__subsection">
+      <InteractionBlock
+        title={ts(locale, "docsDcPermissionsTitle")}
+        trigger={ts(locale, "docsDcPermissionsTrigger")}
+        description={ts(locale, "docsDcPermissionsDesc")}
+        demo={ts(locale, "docsDcPermissionsDemo")}
+      />
+    </div>
+
+    <div id="dc-questions" class="docs-content__subsection">
+      <InteractionBlock
+        title={ts(locale, "docsDcQuestionsTitle")}
+        trigger={ts(locale, "docsDcQuestionsTrigger")}
+        description={ts(locale, "docsDcQuestionsDesc")}
+        demo={ts(locale, "docsDcQuestionsDemo")}
+      />
+    </div>
+  </section>
+
+  <DocsPagination
+    locale={locale}
+    prev={{ page: "telegram", labelKey: "docsSidebarTelegram" }}
+    next={{ page: "slack", labelKey: "docsSidebarSlack" }}
+  />
+</article>
+
+<style>
+  .docs-content__subsection {
+    margin-top: 1.25rem;
+  }
+</style>

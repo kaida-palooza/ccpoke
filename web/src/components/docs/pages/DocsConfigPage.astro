@@ -33,8 +33,13 @@ const breadcrumbHref = locale === DEFAULT_LOCALE ? `${base}docs/` : `${base}${lo
           </tr>
         </thead>
         <tbody>
-          <tr><td>telegram_bot_token</td><td>string</td><td>required</td><td>{ts(locale, "docsConfigBotToken")}</td></tr>
-          <tr><td>user_id</td><td>integer</td><td>required</td><td>{ts(locale, "docsConfigUserId")}</td></tr>
+          <tr><td>channel</td><td>string</td><td>"telegram"</td><td>{ts(locale, "docsConfigChannel")}</td></tr>
+          <tr><td>telegram_bot_token</td><td>string</td><td>—</td><td>{ts(locale, "docsConfigBotToken")}</td></tr>
+          <tr><td>user_id</td><td>integer</td><td>—</td><td>{ts(locale, "docsConfigUserId")}</td></tr>
+          <tr><td>discord_bot_token</td><td>string</td><td>—</td><td>{ts(locale, "docsConfigDiscordBotToken")}</td></tr>
+          <tr><td>discord_user_id</td><td>string</td><td>—</td><td>{ts(locale, "docsConfigDiscordUserId")}</td></tr>
+          <tr><td>slack_bot_token</td><td>string</td><td>—</td><td>{ts(locale, "docsConfigSlackBotToken")}</td></tr>
+          <tr><td>slack_channel_id</td><td>string</td><td>—</td><td>{ts(locale, "docsConfigSlackChannelId")}</td></tr>
           <tr><td>hook_port</td><td>integer</td><td>9377</td><td>{ts(locale, "docsConfigHookPort")}</td></tr>
           <tr><td>hook_secret</td><td>string</td><td>auto</td><td>{ts(locale, "docsConfigHookSecret")}</td></tr>
           <tr><td>locale</td><td>string</td><td>"en"</td><td>{ts(locale, "docsConfigLocale")}</td></tr>
@@ -59,7 +64,7 @@ const breadcrumbHref = locale === DEFAULT_LOCALE ? `${base}docs/` : `${base}${lo
 
   <DocsPagination
     locale={locale}
-    prev={{ page: "telegram", labelKey: "docsSidebarTelegram" }}
+    prev={{ page: "slack", labelKey: "docsSidebarSlack" }}
   />
 </article>
 

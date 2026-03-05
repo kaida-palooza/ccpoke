@@ -29,6 +29,7 @@ const sidebarSections = [
       { id: "cli-run", label: "ccpoke" },
       { id: "cli-setup", label: "setup" },
       { id: "cli-project", label: "project" },
+      { id: "cli-channel", label: "channel" },
       { id: "cli-update", label: "update" },
       { id: "cli-uninstall", label: "uninstall" },
       { id: "cli-help", label: "help" },
@@ -44,6 +45,26 @@ const sidebarSections = [
       { id: "tg-chat", label: ts(locale, "docsSidebarTgChat") },
       { id: "tg-permissions", label: ts(locale, "docsSidebarTgPermissions") },
       { id: "tg-questions", label: ts(locale, "docsSidebarTgQuestions") },
+    ],
+  },
+  {
+    id: "discord",
+    label: ts(locale, "docsSidebarDiscord"),
+    page: "discord",
+    children: [
+      { id: "dc-commands", label: ts(locale, "docsSidebarDcCommands") },
+      { id: "dc-notifications", label: ts(locale, "docsSidebarDcNotifications") },
+      { id: "dc-chat", label: ts(locale, "docsSidebarDcChat") },
+      { id: "dc-permissions", label: ts(locale, "docsSidebarDcPermissions") },
+      { id: "dc-questions", label: ts(locale, "docsSidebarDcQuestions") },
+    ],
+  },
+  {
+    id: "slack",
+    label: ts(locale, "docsSidebarSlack"),
+    page: "slack",
+    children: [
+      { id: "slk-notifications", label: ts(locale, "docsSidebarSlkNotifications") },
     ],
   },
   {

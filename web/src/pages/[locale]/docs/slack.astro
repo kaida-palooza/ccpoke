@@ -2,7 +2,7 @@
 import DocsBaseLayout from "../../../components/docs/DocsBaseLayout.astro";
 import DocsLayout from "../../../components/docs/DocsLayout.astro";
 import DocsToc from "../../../components/docs/DocsToc.astro";
-import DocsCliPage from "../../../components/docs/pages/DocsCliPage.astro";
+import DocsSlackPage from "../../../components/docs/pages/DocsSlackPage.astro";
 import { ts, SUPPORTED_LOCALES, DEFAULT_LOCALE, type Locale } from "../../../i18n";
 
 export function getStaticPaths() {
@@ -14,19 +14,13 @@ export function getStaticPaths() {
 const locale = (Astro.props.locale ?? DEFAULT_LOCALE) as Locale;
 
 const tocItems = [
-  { id: "cli-run", label: "ccpoke" },
-  { id: "cli-setup", label: "setup" },
-  { id: "cli-project", label: "project" },
-  { id: "cli-channel", label: "channel" },
-  { id: "cli-update", label: "update" },
-  { id: "cli-uninstall", label: "uninstall" },
-  { id: "cli-help", label: "help" },
+  { id: "slk-notifications", label: ts(locale, "docsSidebarSlkNotifications") },
 ];
 ---
 
-<DocsBaseLayout locale={locale} currentPage="cli" title={`CLI Reference — ${ts(locale, "docsTitle")}`}>
-  <DocsLayout locale={locale} currentPage="cli">
-    <DocsCliPage locale={locale} />
+<DocsBaseLayout locale={locale} currentPage="slack" title={`Slack — ${ts(locale, "docsTitle")}`}>
+  <DocsLayout locale={locale} currentPage="slack">
+    <DocsSlackPage locale={locale} />
     <DocsToc locale={locale} items={tocItems} slot="toc" />
   </DocsLayout>
 </DocsBaseLayout>

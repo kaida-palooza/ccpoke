@@ -1,0 +1,20 @@
+---
+import DocsBaseLayout from "../../components/docs/DocsBaseLayout.astro";
+import DocsLayout from "../../components/docs/DocsLayout.astro";
+import DocsToc from "../../components/docs/DocsToc.astro";
+import DocsSlackPage from "../../components/docs/pages/DocsSlackPage.astro";
+import { ts, type Locale } from "../../i18n";
+
+const locale: Locale = "en";
+
+const tocItems = [
+  { id: "slk-notifications", label: ts(locale, "docsSidebarSlkNotifications") },
+];
+---
+
+<DocsBaseLayout locale={locale} currentPage="slack" title={`Slack — ${ts(locale, "docsTitle")}`}>
+  <DocsLayout locale={locale} currentPage="slack">
+    <DocsSlackPage locale={locale} />
+    <DocsToc locale={locale} items={tocItems} slot="toc" />
+  </DocsLayout>
+</DocsBaseLayout>
