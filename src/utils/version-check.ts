@@ -1,4 +1,4 @@
-import { execSync, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 
 import * as p from "@clack/prompts";
 
@@ -75,20 +75,31 @@ export async function fetchUpdateInfo(): Promise<UpdateInfo | null> {
   return null;
 }
 
-function runUpdateInline(): { ok: true } | { ok: false; cmd: string; error: string } {
+async function runUpdateInline(): Promise<
+  { ok: true } | { ok: false; cmd: string; error: string }
+> {
   const pm = detectGlobalPackageManager();
   const pkg = "ccpoke";
   const cmd =
     pm === PackageManager.Yarn ? `yarn global add ${pkg}` : `${pm} install -g ${pkg}@latest`;
 
-  try {
-    execSync(cmd, { stdio: "pipe" });
-    return { ok: true };
-  } catch (e) {
-    const stderr =
-      e instanceof Error && "stderr" in e ? String((e as { stderr: unknown }).stderr).trim() : "";
-    return { ok: false, cmd, error: stderr || (e instanceof Error ? e.message : String(e)) };
-  }
+  const [bin, ...args] = cmd.split(" ");
+
+  return new Promise((resolve) => {
+    const child = spawn(bin!, args, { stdio: "pipe" });
+    const chunks: Buffer[] = [];
+
+    child.stderr?.on("data", (chunk: Buffer) => chunks.push(chunk));
+
+    child.on("error", (e) => resolve({ ok: false, cmd, error: e.message }));
+    child.on("close", (code) => {
+      if (code === 0) {
+        resolve({ ok: true });
+      } else {
+        resolve({ ok: false, cmd, error: Buffer.concat(chunks).toString().trim() });
+      }
+    });
+  });
 }
 
 export async function promptUpdateOrContinue(info: UpdateInfo): Promise<void> {
@@ -115,7 +126,7 @@ export async function promptUpdateOrContinue(info: UpdateInfo): Promise<void> {
   const s = p.spinner();
   s.start(t("versionCheck.updating"));
 
-  const result = runUpdateInline();
+  const result = await runUpdateInline();
 
   if (result.ok) {
     s.stop(`✅ v${info.latestVersion} ${t("versionCheck.ready")}`);
