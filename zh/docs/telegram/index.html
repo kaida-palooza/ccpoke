@@ -64,7 +64,7 @@ const locale = "zh";
 
 🤖 Opus 4.6
 
-[查看详情]  [聊天]</pre>  </div> </div> <div id="tg-chat" class="docs-content__subsection" data-astro-cid-22a7vht5> <div class="interact-block"> <p class="interact-block__title">双向聊天</p> <p class="interact-block__trigger">点击通知上的 &quot;聊天&quot; 或从 /sessions 选择会话</p> <p class="interact-block__desc">必须先点击 &quot;Chat&quot; 按钮 — 这告诉 ccpoke 消息要发送到哪个代理会话。两种入口：
+[查看详情]  [聊天]</pre>  </div> <p class="docs-tip" data-astro-cid-22a7vht5> <svg class="docs-tip__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-22a7vht5> <circle cx="12" cy="12" r="10" data-astro-cid-22a7vht5></circle> <line x1="12" y1="16" x2="12" y2="12" data-astro-cid-22a7vht5></line> <line x1="12" y1="8" x2="12.01" y2="8" data-astro-cid-22a7vht5></line> </svg> <span data-astro-cid-22a7vht5>在 Telegram iOS 上，如果你点击 Chat 后关闭应用而没有回复，重新打开时可能会显示旧的回复草稿。这是 Telegram 客户端的行为 — 点击 ✕ 即可关闭。</span> </p> </div> <div id="tg-chat" class="docs-content__subsection" data-astro-cid-22a7vht5> <div class="interact-block"> <p class="interact-block__title">双向聊天</p> <p class="interact-block__trigger">点击通知上的 &quot;聊天&quot; 或从 /sessions 选择会话</p> <p class="interact-block__desc">必须先点击 &quot;Chat&quot; 按钮 — 这告诉 ccpoke 消息要发送到哪个代理会话。两种入口：
 (1) 任务通知上的 Chat 按钮
 (2) /sessions → 选择会话 → Chat
 点击后，Telegram 打开回复框。输入提示，ccpoke 通过 tmux send-keys 注入目标代理。</p> <pre class="interact-block__demo">通过 /sessions：

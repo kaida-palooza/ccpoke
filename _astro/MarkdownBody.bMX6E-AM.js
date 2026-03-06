@@ -83,7 +83,7 @@ gia-pha
 Type your message below ↓
 > Summarize recent changes
 
-✓ Sent to session`,docsTgChatRequirement:"Requires tmux (macOS / Linux). Windows is not yet supported for two-way chat.",docsTgPermissionsTitle:"Permission Handling",docsTgPermissionsTrigger:"When an agent needs permission (file write, bash command, etc.)",docsTgPermissionsDesc:'The agent pauses and sends a notification with the tool name and summary. You tap Allow to approve or Deny to reject. ccpoke injects "y" or "n" into the agent. Expires after 10 minutes.',docsTgPermissionsDemo:`🔐 Permission Request
+✓ Sent to session`,docsTgChatRequirement:"Requires tmux (macOS / Linux). Windows is not yet supported for two-way chat.",docsTgChatGhostDraft:"On Telegram iOS, if you tap Chat then close the app without replying, reopening may show a stale reply draft. This is a Telegram client behavior — just tap ✕ to dismiss it.",docsTgPermissionsTitle:"Permission Handling",docsTgPermissionsTrigger:"When an agent needs permission (file write, bash command, etc.)",docsTgPermissionsDesc:'The agent pauses and sends a notification with the tool name and summary. You tap Allow to approve or Deny to reject. ccpoke injects "y" or "n" into the agent. Expires after 10 minutes.',docsTgPermissionsDemo:`🔐 Permission Request
 
 Tool: bash
 Command: rm -rf node_modules && npm install
@@ -232,7 +232,7 @@ gia-pha
 Nhập tin nhắn bên dưới ↓
 > Tóm tắt thay đổi gần đây
 
-✓ Đã gửi tới phiên`,docsTgChatRequirement:"Yêu cầu tmux (macOS / Linux). Windows chưa hỗ trợ chat 2 chiều.",docsTgPermissionsTitle:"Xử lý quyền",docsTgPermissionsTrigger:"Khi agent cần quyền (ghi file, chạy lệnh, v.v.)",docsTgPermissionsDesc:'Agent tạm dừng và gửi thông báo kèm tên tool, tóm tắt. Nhấn Allow để đồng ý, Deny để từ chối. ccpoke inject "y" hoặc "n" vào agent. Hết hạn sau 10 phút.',docsTgPermissionsDemo:`🔐 Yêu cầu quyền
+✓ Đã gửi tới phiên`,docsTgChatRequirement:"Yêu cầu tmux (macOS / Linux). Windows chưa hỗ trợ chat 2 chiều.",docsTgChatGhostDraft:"Trên Telegram iOS, nếu bạn bấm Chat rồi tắt app mà không reply, khi mở lại có thể hiện draft reply cũ. Đây là hành vi của Telegram — bấm ✕ để bỏ qua.",docsTgPermissionsTitle:"Xử lý quyền",docsTgPermissionsTrigger:"Khi agent cần quyền (ghi file, chạy lệnh, v.v.)",docsTgPermissionsDesc:'Agent tạm dừng và gửi thông báo kèm tên tool, tóm tắt. Nhấn Allow để đồng ý, Deny để từ chối. ccpoke inject "y" hoặc "n" vào agent. Hết hạn sau 10 phút.',docsTgPermissionsDemo:`🔐 Yêu cầu quyền
 
 Tool: bash
 Lệnh: rm -rf node_modules && npm install
@@ -381,7 +381,7 @@ gia-pha
 在下方输入消息 ↓
 > 总结最近的变更
 
-✓ 已发送到会话`,docsTgChatRequirement:"需要 tmux（macOS / Linux）。Windows 暂不支持双向聊天。",docsTgPermissionsTitle:"权限处理",docsTgPermissionsTrigger:"当代理需要权限时（写入文件、执行 bash 命令等）",docsTgPermissionsDesc:'代理暂停并发送通知，包含工具名称和摘要。点击 "允许" 批准或 "拒绝"。ccpoke 将 "y" 或 "n" 注入代理。10 分钟后过期。',docsTgPermissionsDemo:`🔐 权限请求
+✓ 已发送到会话`,docsTgChatRequirement:"需要 tmux（macOS / Linux）。Windows 暂不支持双向聊天。",docsTgChatGhostDraft:"在 Telegram iOS 上，如果你点击 Chat 后关闭应用而没有回复，重新打开时可能会显示旧的回复草稿。这是 Telegram 客户端的行为 — 点击 ✕ 即可关闭。",docsTgPermissionsTitle:"权限处理",docsTgPermissionsTrigger:"当代理需要权限时（写入文件、执行 bash 命令等）",docsTgPermissionsDesc:'代理暂停并发送通知，包含工具名称和摘要。点击 "允许" 批准或 "拒绝"。ccpoke 将 "y" 或 "n" 注入代理。10 分钟后过期。',docsTgPermissionsDemo:`🔐 权限请求
 
 工具: bash
 命令: rm -rf node_modules && npm install
