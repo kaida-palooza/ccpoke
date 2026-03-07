@@ -37,7 +37,6 @@ export const vi: TranslationKeys = {
       "một ccpoke khác đang chạy trên port {port}\n\n  Để dừng nó:\n    kill $(lsof -ti:{port})\n",
     twowayEnabled: "📱 Chat 2 chiều: đã bật",
     twowayDisabled: "📱 Chat 2 chiều: tắt (không có tmux)",
-    windowsNoTwoWay: "Chat 2 chiều không khả dụng (tmux không hỗ trợ trên Windows)",
   },
 
   setup: {
@@ -78,6 +77,9 @@ export const vi: TranslationKeys = {
     tmuxInstallFailed:
       "Không thể cài tmux tự động. Hãy cài thủ công:\n  macOS: brew install tmux\n  Linux: sudo apt install tmux",
     tmuxInstallSkipped: "Bỏ qua cài tmux — chat 2 chiều tắt, notification vẫn hoạt động",
+    psmuxInstallPrompt: "Cài psmux để sử dụng tính năng chat 2 chiều trên Windows?",
+    psmuxInstallFailed:
+      "Không tìm thấy trình quản lý gói (winget, scoop, choco). Cài một trong chúng rồi chạy lại setup.",
     addProjectPrompt: "Thêm project để tạo session agent?",
     addAnotherProject: "Thêm project khác?",
     projectAdded: 'Đã thêm "{name}" → {path}',

@@ -1,6 +1,35 @@
 import { execSync } from "node:child_process";
 
+import { isWindows } from "../utils/constants.js";
+import { busyWaitMs, escapeShellArg } from "../utils/shell.js";
 import { isAgentIdleByProcess, type ProcessTree } from "./tmux-scanner.js";
+
+let resolvedBinary: string | null = null;
+
+export function resetTmuxBinaryCache(): void {
+  resolvedBinary = null;
+}
+
+export function getTmuxBinary(): string {
+  if (resolvedBinary) return resolvedBinary;
+  try {
+    execSync("tmux -V", { stdio: "pipe", timeout: 3000 });
+    resolvedBinary = "tmux";
+    return resolvedBinary;
+  } catch {
+    if (isWindows()) {
+      try {
+        execSync("psmux -V", { stdio: "pipe", timeout: 3000 });
+        resolvedBinary = "psmux";
+        return resolvedBinary;
+      } catch {
+        /* not available */
+      }
+    }
+    resolvedBinary = "tmux";
+    return resolvedBinary;
+  }
+}
 
 export class TmuxBridge {
   private available: boolean | null = null;
@@ -8,42 +37,44 @@ export class TmuxBridge {
   isTmuxAvailable(): boolean {
     if (this.available !== null) return this.available;
     try {
-      execSync("tmux -V", { stdio: "pipe" });
+      execSync(`${getTmuxBinary()} -V`, { stdio: "pipe", timeout: 3000 });
       this.available = true;
+      return true;
     } catch {
       this.available = false;
+      return false;
     }
-    return this.available;
   }
 
   sendKeys(target: string, text: string, submitKeys: string[]): void {
+    const bin = getTmuxBinary();
     const tgt = escapeShellArg(target);
     const collapsed = text.replace(/\n+/g, " ").trim();
     if (collapsed.length === 0) return;
 
     const escaped = escapeTmuxText(collapsed);
-    execSync(`tmux send-keys -t ${tgt} -l ${escaped}`, {
+    execSync(`${bin} send-keys -t ${tgt} -l ${escaped}`, {
       stdio: "pipe",
       timeout: 5000,
     });
-    execSync("sleep 0.1", { stdio: "pipe", timeout: 2000 });
+    busyWaitMs(100);
     for (let i = 0; i < submitKeys.length; i++) {
-      if (i > 0) execSync("sleep 0.15", { stdio: "pipe", timeout: 2000 });
-      execSync(`tmux send-keys -t ${tgt} ${escapeShellArg(submitKeys[i]!)}`, {
+      if (i > 0) busyWaitMs(150);
+      execSync(`${bin} send-keys -t ${tgt} ${escapeShellArg(submitKeys[i]!)}`, {
         stdio: "pipe",
         timeout: 5000,
       });
     }
   }
 
-  /** Send text without trailing Enter — caller controls submission */
   sendText(target: string, text: string): void {
+    const bin = getTmuxBinary();
     const tgt = escapeShellArg(target);
     const collapsed = text.replace(/\n+/g, " ").trim();
     if (collapsed.length === 0) return;
 
     const escaped = escapeTmuxText(collapsed);
-    execSync(`tmux send-keys -t ${tgt} -l ${escaped}`, {
+    execSync(`${bin} send-keys -t ${tgt} -l ${escaped}`, {
       stdio: "pipe",
       timeout: 5000,
     });
@@ -53,16 +84,18 @@ export class TmuxBridge {
     target: string,
     key: "Down" | "Up" | "Space" | "Enter" | "Right" | "Left" | "Escape"
   ): void {
+    const bin = getTmuxBinary();
     const tgt = escapeShellArg(target);
-    execSync(`tmux send-keys -t ${tgt} ${key}`, {
+    execSync(`${bin} send-keys -t ${tgt} ${key}`, {
       stdio: "pipe",
       timeout: 5000,
     });
   }
 
   capturePane(target: string, lines = 50): string {
+    const bin = getTmuxBinary();
     const tgt = escapeShellArg(target);
-    return execSync(`tmux capture-pane -t ${tgt} -p -S -${lines}`, {
+    return execSync(`${bin} capture-pane -t ${tgt} -p -S -${lines}`, {
       encoding: "utf-8",
       stdio: "pipe",
       timeout: 5000,
@@ -97,9 +130,10 @@ export class TmuxBridge {
   }
 
   isAgentIdle(target: string, tree?: ProcessTree): boolean {
+    const bin = getTmuxBinary();
     try {
       const panePid = execSync(
-        `tmux display-message -t ${escapeShellArg(target)} -p '#{pane_pid}'`,
+        `${bin} display-message -t ${escapeShellArg(target)} -p ${escapeShellArg("#{pane_pid}")}`,
         {
           encoding: "utf-8",
           stdio: "pipe",
@@ -113,23 +147,24 @@ export class TmuxBridge {
   }
 
   createPane(sessionName: string, cwd: string): string {
+    const bin = getTmuxBinary();
     const dir = escapeShellArg(cwd);
 
     if (!this.hasRunningSession(sessionName)) {
       const name = escapeShellArg(sessionName);
       return execSync(
-        `tmux new-session -d -s ${name} -c ${dir} -P -F '#{session_name}:#{window_index}.#{pane_index}'`,
+        `${bin} new-session -d -s ${name} -c ${dir} -P -F ${escapeShellArg("#{session_name}:#{window_index}.#{pane_index}")}`,
         { encoding: "utf-8", stdio: "pipe", timeout: 5000 }
       ).trim();
     }
 
     const target = escapeShellArg(`${sessionName}:0`);
     const paneTarget = execSync(
-      `tmux split-window -t ${target} -c ${dir} -P -F '#{session_name}:#{window_index}.#{pane_index}'`,
+      `${bin} split-window -t ${target} -c ${dir} -P -F ${escapeShellArg("#{session_name}:#{window_index}.#{pane_index}")}`,
       { encoding: "utf-8", stdio: "pipe", timeout: 5000 }
     ).trim();
 
-    execSync(`tmux select-layout -t ${target} tiled`, {
+    execSync(`${bin} select-layout -t ${target} tiled`, {
       stdio: "pipe",
       timeout: 3000,
     });
@@ -138,8 +173,9 @@ export class TmuxBridge {
   }
 
   private hasRunningSession(sessionName: string): boolean {
+    const bin = getTmuxBinary();
     try {
-      execSync(`tmux has-session -t ${escapeShellArg(sessionName)}`, {
+      execSync(`${bin} has-session -t ${escapeShellArg(sessionName)}`, {
         stdio: "pipe",
         timeout: 3000,
       });
@@ -150,22 +186,28 @@ export class TmuxBridge {
   }
 
   killPane(target: string): void {
+    const bin = getTmuxBinary();
     const tgt = escapeShellArg(target);
-    execSync(`tmux kill-pane -t ${tgt}`, { stdio: "pipe", timeout: 5000 });
+    execSync(`${bin} kill-pane -t ${tgt}`, { stdio: "pipe", timeout: 5000 });
   }
 }
 
 function escapeTmuxText(text: string): string {
-  const escaped = text
-    .replace(/\r/g, "")
+  const cleaned = text.replace(/\r/g, "");
+  if (isWindows()) {
+    const escaped = cleaned
+      .replace(/\\/g, "\\\\")
+      .replace(/"/g, '""')
+      .replace(/%/g, "%%")
+      .replace(/!/g, "^^!")
+      .replace(/([&|<>^])/g, "^$1");
+    return `"${escaped}"`;
+  }
+  const escaped = cleaned
     .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"')
     .replace(/\$/g, "\\$")
     .replace(/`/g, "\\`")
     .replace(/;/g, "\\;");
   return `"${escaped}"`;
-}
-
-export function escapeShellArg(arg: string): string {
-  return `'${arg.replace(/'/g, "'\\''")}'`;
 }

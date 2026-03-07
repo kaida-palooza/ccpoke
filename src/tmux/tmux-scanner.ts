@@ -1,10 +1,12 @@
 import { execSync } from "node:child_process";
-import { readdirSync, statSync } from "node:fs";
+import { closeSync, fstatSync, openSync, readdirSync, readSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
 import { AgentName } from "../agent/types.js";
-import { escapeShellArg } from "./tmux-bridge.js";
+import { isWindows } from "../utils/constants.js";
+import { escapeShellArg } from "../utils/shell.js";
+import { getTmuxBinary } from "./tmux-bridge.js";
 
 export interface TmuxPaneInfo {
   target: string;
@@ -60,17 +62,40 @@ const AGENT_PATTERNS: AgentProcessPattern[] = [
 ];
 
 export function buildProcessTree(): ProcessTree {
+  return isWindows() ? buildProcessTreeWindows() : buildProcessTreeUnix();
+}
+
+function buildProcessTreeUnix(): ProcessTree {
   try {
     const output = execSync("ps -e -o pid=,ppid=,command=", {
       encoding: "utf-8",
       stdio: "pipe",
       timeout: 3000,
     });
+    return parseProcessLines(output, /^(\d+)\s+(\d+)\s+(.+)$/);
+  } catch {
+    return new Map();
+  }
+}
+
+function buildProcessTreeWindows(): ProcessTree {
+  try {
+    const output = execSync(
+      'powershell -NoProfile -Command "Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress"',
+      { encoding: "utf-8", stdio: "pipe", timeout: 10000 }
+    );
+    const raw = JSON.parse(output) as
+      | { ProcessId: number; ParentProcessId: number; CommandLine: string | null }[]
+      | { ProcessId: number; ParentProcessId: number; CommandLine: string | null };
+    const processes = Array.isArray(raw) ? raw : [raw];
     const tree: ProcessTree = new Map();
-    for (const line of output.trim().split("\n")) {
-      const match = line.trim().match(/^(\d+)\s+(\d+)\s+(.+)$/);
-      if (!match) continue;
-      const entry: ProcessEntry = { pid: match[1]!, ppid: match[2]!, command: match[3]! };
+    for (const proc of processes) {
+      if (proc.ProcessId == null || proc.ParentProcessId == null) continue;
+      const entry: ProcessEntry = {
+        pid: String(proc.ProcessId),
+        ppid: String(proc.ParentProcessId),
+        command: proc.CommandLine ?? "",
+      };
       const siblings = tree.get(entry.ppid) ?? [];
       siblings.push(entry);
       tree.set(entry.ppid, siblings);
@@ -79,6 +104,19 @@ export function buildProcessTree(): ProcessTree {
   } catch {
     return new Map();
   }
+}
+
+function parseProcessLines(output: string, pattern: RegExp): ProcessTree {
+  const tree: ProcessTree = new Map();
+  for (const line of output.trim().split("\n")) {
+    const match = line.trim().match(pattern);
+    if (!match) continue;
+    const entry: ProcessEntry = { pid: match[1]!, ppid: match[2]!, command: match[3]! };
+    const siblings = tree.get(entry.ppid) ?? [];
+    siblings.push(entry);
+    tree.set(entry.ppid, siblings);
+  }
+  return tree;
 }
 
 export function findAgentDescendant(panePid: string, tree?: ProcessTree): AgentName | null {
@@ -106,7 +144,7 @@ export function hasClaudeDescendant(panePid: string, tree?: ProcessTree): boolea
   return findAgentDescendant(panePid, tree) !== null;
 }
 
-const SHELL_PATTERN = /\b(bash|zsh|sh|fish)\b/;
+const SHELL_PATTERN = /\b(bash|zsh|sh|fish|powershell|pwsh|cmd)\b/;
 
 export function isAgentIdleByProcess(
   panePid: string,
@@ -159,11 +197,14 @@ export interface AgentScanOutput {
 
 export function scanAgentPanes(): AgentScanOutput {
   try {
-    const output = execSync(`tmux list-panes -a -F '${FORMAT_STRING}'`, {
-      encoding: "utf-8",
-      stdio: "pipe",
-      timeout: 5000,
-    });
+    const output = execSync(
+      `${getTmuxBinary()} list-panes -a -F ${escapeShellArg(FORMAT_STRING)}`,
+      {
+        encoding: "utf-8",
+        stdio: "pipe",
+        timeout: 5000,
+      }
+    );
 
     const tree = buildProcessTree();
 
@@ -199,7 +240,7 @@ export function isAgentAliveInPane(target: string, tree?: ProcessTree): boolean 
   const sessionName = target.split(":")[0];
   if (!sessionName) return false;
   try {
-    execSync(`tmux has-session -t ${escapeShellArg(sessionName)}`, {
+    execSync(`${getTmuxBinary()} has-session -t ${escapeShellArg(sessionName)}`, {
       stdio: "pipe",
       timeout: 3000,
     });
@@ -208,11 +249,14 @@ export function isAgentAliveInPane(target: string, tree?: ProcessTree): boolean 
   }
 
   try {
-    const panePid = execSync(`tmux display-message -t ${escapeShellArg(target)} -p '#{pane_pid}'`, {
-      encoding: "utf-8",
-      stdio: "pipe",
-      timeout: 3000,
-    }).trim();
+    const panePid = execSync(
+      `${getTmuxBinary()} display-message -t ${escapeShellArg(target)} -p ${escapeShellArg("#{pane_pid}")}`,
+      {
+        encoding: "utf-8",
+        stdio: "pipe",
+        timeout: 3000,
+      }
+    ).trim();
     return findAgentDescendant(panePid, tree) !== null;
   } catch {
     return false;
@@ -228,7 +272,7 @@ export function isPaneAlive(target: string): boolean {
   const sessionName = target.split(":")[0];
   if (!sessionName) return false;
   try {
-    execSync(`tmux has-session -t ${escapeShellArg(sessionName)}`, {
+    execSync(`${getTmuxBinary()} has-session -t ${escapeShellArg(sessionName)}`, {
       stdio: "pipe",
       timeout: 3000,
     });
@@ -240,7 +284,7 @@ export function isPaneAlive(target: string): boolean {
 
 export function detectModelFromCwd(cwd: string): string {
   try {
-    const encoded = cwd.replaceAll("/", "-");
+    const encoded = cwd.replaceAll("\\", "-").replaceAll("/", "-");
     const projectDir = join(homedir(), ".claude", "projects", encoded);
 
     const jsonlFiles = readdirSync(projectDir)
@@ -253,13 +297,25 @@ export function detectModelFromCwd(cwd: string): string {
 
     if (jsonlFiles.length === 0) return "";
 
-    const output = execSync(
-      `grep -o '"model":"[^"]*"' ${escapeShellArg(jsonlFiles[0]!.path)} | tail -1`,
-      { encoding: "utf-8", stdio: "pipe", timeout: 3000 }
-    ).trim();
+    const TAIL_BYTES = 8192;
+    const fd = openSync(jsonlFiles[0]!.path, "r");
+    try {
+      const size = fstatSync(fd).size;
+      const start = Math.max(0, size - TAIL_BYTES);
+      const buf = Buffer.alloc(Math.min(TAIL_BYTES, size));
+      readSync(fd, buf, 0, buf.length, start);
+      const tail = buf.toString("utf-8");
+      const lines = tail.split("\n");
 
-    const match = output.match(/"model":"([^"]*)"/);
-    return match?.[1] ?? "";
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const match = lines[i]!.match(/"model":"([^"]*)"/);
+        if (match) return match[1] ?? "";
+      }
+    } finally {
+      closeSync(fd);
+    }
+
+    return "";
   } catch {
     return "";
   }

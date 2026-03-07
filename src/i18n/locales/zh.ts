@@ -36,7 +36,6 @@ export const zh: TranslationKeys = {
       "另一个 ccpoke 已在端口 {port} 上运行\n\n  停止方法:\n    kill $(lsof -ti:{port})\n",
     twowayEnabled: "📱 双向聊天: 已启用",
     twowayDisabled: "📱 双向聊天: 已禁用 (无 tmux)",
-    windowsNoTwoWay: "双向聊天不可用 (tmux 不支持 Windows)",
   },
 
   setup: {
@@ -77,6 +76,9 @@ export const zh: TranslationKeys = {
     tmuxInstallFailed:
       "无法自动安装 tmux。请手动安装:\n  macOS: brew install tmux\n  Linux: sudo apt install tmux",
     tmuxInstallSkipped: "跳过 tmux 安装 — 双向聊天已禁用，通知仍正常工作",
+    psmuxInstallPrompt: "安装 psmux 以支持 Windows 上的双向聊天？",
+    psmuxInstallFailed:
+      "未找到包管理器（winget、scoop、choco）。请先安装其中一个，然后重新运行 setup。",
     addProjectPrompt: "添加项目以创建 agent 会话？",
     addAnotherProject: "添加另一个项目？",
     projectAdded: '已添加 "{name}" → {path}',

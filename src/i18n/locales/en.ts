@@ -37,7 +37,6 @@ export const en: TranslationKeys = {
       "another ccpoke is already running on port {port}\n\n  To stop it:\n    kill $(lsof -ti:{port})\n",
     twowayEnabled: "📱 2-way chat: enabled",
     twowayDisabled: "📱 2-way chat: disabled (no tmux)",
-    windowsNoTwoWay: "2-way chat is not supported (tmux is unavailable on Windows)",
   },
 
   setup: {
@@ -78,6 +77,9 @@ export const en: TranslationKeys = {
     tmuxInstallFailed:
       "Failed to install tmux automatically. Install it manually:\n  macOS: brew install tmux\n  Linux: sudo apt install tmux",
     tmuxInstallSkipped: "Skipped tmux install — 2-way chat disabled, notifications still work",
+    psmuxInstallPrompt: "Install psmux for 2-way chat support on Windows?",
+    psmuxInstallFailed:
+      "No package manager found (winget, scoop, choco). Install one first, then re-run setup.",
     addProjectPrompt: "Add a project to create agent sessions?",
     addAnotherProject: "Add another project?",
     projectAdded: 'Added "{name}" → {path}',

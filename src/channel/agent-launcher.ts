@@ -1,8 +1,9 @@
 import { execSync } from "node:child_process";
 
 import { AgentName } from "../agent/types.js";
-import type { TmuxBridge } from "../tmux/tmux-bridge.js";
+import { getTmuxBinary, type TmuxBridge } from "../tmux/tmux-bridge.js";
 import { logDebug } from "../utils/log.js";
+import { escapeShellArg } from "../utils/shell.js";
 
 const AGENT_START_COMMANDS: Record<string, string> = {
   [AgentName.ClaudeCode]: "claude --dangerously-skip-permissions",
@@ -61,9 +62,10 @@ export function autoTrustWorkspace(
 }
 
 function getTmuxSessionName(): string {
+  const bin = getTmuxBinary();
   if (process.env.TMUX) {
     try {
-      return execSync("tmux display-message -p '#{session_name}'", {
+      return execSync(`${bin} display-message -p ${escapeShellArg("#{session_name}")}`, {
         encoding: "utf-8",
         stdio: "pipe",
         timeout: 3000,
@@ -74,7 +76,7 @@ function getTmuxSessionName(): string {
   }
 
   try {
-    const output = execSync("tmux list-sessions -F '#{session_name}'", {
+    const output = execSync(`${bin} list-sessions -F ${escapeShellArg("#{session_name}")}`, {
       encoding: "utf-8",
       stdio: "pipe",
       timeout: 3000,

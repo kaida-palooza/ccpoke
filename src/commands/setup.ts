@@ -12,10 +12,12 @@ import { createDefaultRegistry } from "../agent/agent-registry.js";
 import { AgentName } from "../agent/types.js";
 import { ConfigManager, type Config } from "../config-manager.js";
 import { Locale, LOCALE_LABELS, setLocale, SUPPORTED_LOCALES, t } from "../i18n/index.js";
+import { resetTmuxBinaryCache } from "../tmux/tmux-bridge.js";
 import { ChannelName, DEFAULT_HOOK_PORT, isMacOS, isWindows } from "../utils/constants.js";
 import { detectCliPrefix } from "../utils/install-detection.js";
 import { promptPath } from "../utils/path-prompt.js";
 import { installShellCompletion } from "../utils/shell-completion.js";
+import { shellSpawnArgs } from "../utils/shell.js";
 
 const SETUP_WAIT_TIMEOUT_MS = 120_000;
 
@@ -603,6 +605,10 @@ function getTmuxVersion(): string | null {
 }
 
 function detectTmuxInstallCommand(): string | null {
+  if (isWindows()) {
+    return detectPsmuxInstallCommand();
+  }
+
   if (isMacOS()) {
     try {
       execSync("which brew", { stdio: "pipe" });
@@ -620,9 +626,75 @@ function detectTmuxInstallCommand(): string | null {
   }
 }
 
+interface PsmuxInstaller {
+  name: string;
+  check: string;
+  install: string;
+}
+
+const PSMUX_INSTALLERS: PsmuxInstaller[] = [
+  {
+    name: "winget",
+    check: "winget --version",
+    install:
+      "winget install marlocarlo.psmux --accept-source-agreements --accept-package-agreements",
+  },
+  {
+    name: "scoop",
+    check: "scoop --version",
+    install:
+      "scoop install https://raw.githubusercontent.com/marlocarlo/psmux/master/scoop/psmux.json",
+  },
+  { name: "choco", check: "choco --version", install: "choco install psmux -y" },
+];
+
+function detectPsmuxInstallCommand(): string | null {
+  for (const installer of PSMUX_INSTALLERS) {
+    try {
+      execSync(installer.check, { stdio: "pipe", timeout: 5000 });
+      return installer.install;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 async function promptTmuxSetup(): Promise<void> {
   if (isWindows()) {
-    p.log.warn(t("bot.windowsNoTwoWay"));
+    const version = getTmuxVersion() ?? getPsmuxVersion();
+    if (version) {
+      p.log.success(t("setup.tmuxDetected", { version }));
+      return;
+    }
+
+    const shouldInstall = await p.confirm({
+      message: t("setup.psmuxInstallPrompt"),
+      initialValue: true,
+    });
+
+    if (p.isCancel(shouldInstall) || !shouldInstall) {
+      p.log.info(t("setup.tmuxInstallSkipped"));
+      return;
+    }
+
+    const installCmd = detectPsmuxInstallCommand();
+    if (!installCmd) {
+      p.log.warn(t("setup.psmuxInstallFailed"));
+      return;
+    }
+
+    const installer = PSMUX_INSTALLERS.find((i) => i.install === installCmd)!;
+    const s = p.spinner();
+    s.start(`${installer.name}: ${installCmd}`);
+    try {
+      await runCommandAsync(installCmd);
+      resetTmuxBinaryCache();
+      s.stop(t("setup.tmuxInstallSuccess"));
+    } catch {
+      s.stop(`${installer.name} failed`);
+      p.log.warn(t("setup.psmuxInstallFailed"));
+    }
     return;
   }
 
@@ -659,9 +731,18 @@ async function promptTmuxSetup(): Promise<void> {
   }
 }
 
+function getPsmuxVersion(): string | null {
+  try {
+    return execSync("psmux -V", { stdio: "pipe", encoding: "utf-8" }).trim();
+  } catch {
+    return null;
+  }
+}
+
 function runCommandAsync(command: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const child = spawn("sh", ["-c", command], { stdio: "pipe" });
+    const { cmd, args } = shellSpawnArgs(command);
+    const child = spawn(cmd, args, { stdio: "pipe" });
 
     let output = "";
 
