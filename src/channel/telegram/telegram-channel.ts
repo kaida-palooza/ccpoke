@@ -299,9 +299,16 @@ export class TelegramChannel implements NotificationChannel {
 
         if (query.data === "session_close_no:") {
           if (query.message) {
-            await this.bot.deleteMessage(query.message.chat.id, query.message.message_id);
+            await this.bot
+              .deleteMessage(query.message.chat.id, query.message.message_id)
+              .catch(() => {});
           }
           await this.bot.answerCallbackQuery(query.id);
+          return;
+        }
+
+        if (query.data?.startsWith("session_dismiss:")) {
+          await this.handleSessionDismiss(query);
           return;
         }
 
@@ -402,7 +409,6 @@ export class TelegramChannel implements NotificationChannel {
 
       this.pendingReplyStore.delete(msg.chat.id, msg.reply_to_message.message_id);
       this.bot.deleteMessage(msg.chat.id, msg.reply_to_message.message_id).catch(() => {});
-
       if (this.promptHandler) {
         const injected = this.promptHandler.injectElicitationResponse(pending.sessionId, msg.text);
         if (injected) {
@@ -640,10 +646,34 @@ export class TelegramChannel implements NotificationChannel {
               text: `🗑 ${t("sessions.closeButton")}`,
               callback_data: `session_close:${sessionId}`,
             },
+            { text: `❌ ${t("chat.cancelButton")}`, callback_data: `session_dismiss:${sessionId}` },
           ],
         ],
       },
     });
+  }
+  /** Send Escape to tmux pane to cancel running process */
+  private async handleSessionDismiss(query: TelegramBot.CallbackQuery): Promise<void> {
+    const sessionId = query.data!.slice(16);
+    if (!this.sessionMap || !this.tmuxBridge) {
+      await this.bot.answerCallbackQuery(query.id, { text: t("chat.sessionExpired") });
+      return;
+    }
+
+    const session = this.resolveSession(sessionId);
+    if (!session?.tmuxTarget) {
+      await this.bot.answerCallbackQuery(query.id, { text: t("chat.sessionExpired") });
+      return;
+    }
+
+    try {
+      this.tmuxBridge.sendSpecialKey(session.tmuxTarget, "Escape");
+    } catch {
+      await this.bot.answerCallbackQuery(query.id, { text: t("chat.tmuxDead") });
+      return;
+    }
+
+    await this.bot.answerCallbackQuery(query.id, { text: t("chat.cancelled") });
   }
 
   /** Session close confirmation */

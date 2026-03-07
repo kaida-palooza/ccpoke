@@ -236,6 +236,8 @@ export const vi: TranslationKeys = {
     tmuxDead: "tmux session đã ngắt kết nối",
     sent: "📩 Đã gửi → {project}",
     busy: "⏳ Claude đang bận — thử lại sau",
+    cancelButton: "Hủy",
+    cancelled: "Đã hủy",
   },
   sessions: {
     title: "Phiên hoạt động",

@@ -234,6 +234,8 @@ export const zh: TranslationKeys = {
     tmuxDead: "tmux 会话已断开",
     sent: "📩 已发送 → {project}",
     busy: "⏳ Claude 正在忙 — 请稍后再试",
+    cancelButton: "取消",
+    cancelled: "已取消",
   },
   sessions: {
     title: "活跃会话",

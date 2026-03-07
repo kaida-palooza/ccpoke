@@ -221,6 +221,8 @@ export interface TranslationKeys {
     tmuxDead: string;
     sent: string;
     busy: string;
+    cancelButton: string;
+    cancelled: string;
   };
   sessions: {
     title: string;

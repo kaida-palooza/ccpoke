@@ -236,6 +236,8 @@ export const en: TranslationKeys = {
     tmuxDead: "tmux session disconnected",
     sent: "📩 Sent → {project}",
     busy: "⏳ Claude is busy — try again later",
+    cancelButton: "Cancel",
+    cancelled: "Cancelled",
   },
   sessions: {
     title: "Active Sessions",

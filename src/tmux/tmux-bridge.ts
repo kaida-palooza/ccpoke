@@ -49,7 +49,10 @@ export class TmuxBridge {
     });
   }
 
-  sendSpecialKey(target: string, key: "Down" | "Up" | "Space" | "Enter" | "Right" | "Left"): void {
+  sendSpecialKey(
+    target: string,
+    key: "Down" | "Up" | "Space" | "Enter" | "Right" | "Left" | "Escape"
+  ): void {
     const tgt = escapeShellArg(target);
     execSync(`tmux send-keys -t ${tgt} ${key}`, {
       stdio: "pipe",
