@@ -148,7 +148,7 @@ export const vi: LocaleDict = {
   docsFaq1Q: "Có cần giữ terminal mở không?",
   docsFaq1A: "Có — ccpoke chạy hook server cục bộ để AI agent kết nối. Giữ nó chạy trong terminal hoặc dùng process manager như <code>pm2</code> hay <code>tmux</code>.",
   docsFaq2Q: "Hỗ trợ những AI agent nào?",
-  docsFaq2A: "Hiện tại: <strong>Claude Code</strong>, <strong>Codex CLI</strong>, <strong>Cursor CLI</strong>, và <strong>Gemini CLI</strong>. Thêm agent qua provider pattern.",
+  docsFaq2A: "Hiện tại: <strong>Claude Code</strong>, <strong>Codex CLI</strong>, <strong>Cursor CLI</strong>, <strong>Gemini CLI</strong>, và <strong>OpenCode</strong>. Thêm agent qua provider pattern.",
   docsFaq3Q: "Có miễn phí không?",
   docsFaq3A: "Có, hoàn toàn miễn phí và mã nguồn mở theo giấy phép MIT. Tự host — dữ liệu ở trên máy bạn.",
   docsFaq4Q: "Dùng được trên Windows không?",
@@ -181,7 +181,7 @@ export const vi: LocaleDict = {
 
   docsOverviewTitle: "ccpoke là gì?",
   docsOverviewDesc: "ccpoke là cầu nối 2 chiều giữa AI coding agent và điện thoại. Khi agent hoàn thành task, bạn nhận thông báo đẩy trên Telegram, Discord, hoặc Slack. Cần gửi prompt, trả lời câu hỏi, hay phê duyệt quyền? Làm ngay trên điện thoại.",
-  docsOverviewDesc2: 'Hỗ trợ <strong>Claude Code</strong>, <strong>Codex CLI</strong>, <strong>Cursor CLI</strong>, <strong>Gemini CLI</strong> và nhiều agent khác. Hỗ trợ <strong>Telegram</strong>, <strong>Discord</strong>, và <strong>Slack</strong>. Mã nguồn mở, tự host, giấy phép MIT.',
+  docsOverviewDesc2: 'Hỗ trợ <strong>Claude Code</strong>, <strong>Codex CLI</strong>, <strong>Cursor CLI</strong>, <strong>Gemini CLI</strong>, <strong>OpenCode</strong> và nhiều agent khác. Hỗ trợ <strong>Telegram</strong>, <strong>Discord</strong>, và <strong>Slack</strong>. Mã nguồn mở, tự host, giấy phép MIT.',
   docsOverviewDiagram: "  AI Agent (Claude Code, Codex CLI...)\n       │\n       ▼\n   ccpoke (hook server)\n       │\n       ├─► Telegram Bot  → 📱\n       ├─► Discord Bot   → 💬\n       └─► Slack Bot     → 📢",
 
   docsGettingStartedTitle: "Bắt đầu",

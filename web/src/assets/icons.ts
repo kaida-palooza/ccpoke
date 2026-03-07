@@ -26,6 +26,7 @@ import brandDiscord from "./icons/brands/discord.svg?raw";
 import brandGemini from "./icons/brands/gemini.svg?raw";
 import brandGoogle from "./icons/brands/google.svg?raw";
 import brandOpenai from "./icons/brands/openai.svg?raw";
+import brandOpencode from "./icons/brands/opencode.svg?raw";
 import brandSlack from "./icons/brands/slack.svg?raw";
 import brandTelegram from "./icons/brands/telegram.svg?raw";
 import brandZalo from "./icons/brands/zalo.svg?raw";
@@ -59,6 +60,7 @@ export const icons = {
   brandGemini,
   brandGoogle,
   brandOpenai,
+  brandOpencode,
   brandSlack,
   brandTelegram,
   brandZalo,

@@ -148,7 +148,7 @@ export const zh: LocaleDict = {
   docsFaq1Q: "需要保持终端打开吗？",
   docsFaq1A: "是的 — ccpoke 运行本地 hook 服务器供 AI 代理连接。保持终端运行或使用 <code>pm2</code>、<code>tmux</code> 等进程管理器。",
   docsFaq2Q: "支持哪些 AI 代理？",
-  docsFaq2A: "目前支持：<strong>Claude Code</strong>、<strong>Codex CLI</strong>、<strong>Cursor CLI</strong> 和 <strong>Gemini CLI</strong>。更多代理通过 provider pattern 持续添加中。",
+  docsFaq2A: "目前支持：<strong>Claude Code</strong>、<strong>Codex CLI</strong>、<strong>Cursor CLI</strong>、<strong>Gemini CLI</strong> 和 <strong>OpenCode</strong>。更多代理通过 provider pattern 持续添加中。",
   docsFaq3Q: "免费吗？",
   docsFaq3A: "是的，完全免费且开源，MIT 许可证。自托管 — 数据留在你的机器上。",
   docsFaq4Q: "能在 Windows 上使用吗？",
@@ -181,7 +181,7 @@ export const zh: LocaleDict = {
 
   docsOverviewTitle: "什么是 ccpoke？",
   docsOverviewDesc: "ccpoke 是 AI 编程代理与手机之间的双向桥梁。当代理完成任务时，你会在 Telegram、Discord 或 Slack 上收到推送通知。需要发送提示、回答问题或审批权限？直接在手机上操作。",
-  docsOverviewDesc2: '支持 <strong>Claude Code</strong>、<strong>Codex CLI</strong>、<strong>Cursor CLI</strong>、<strong>Gemini CLI</strong> 等。支持 <strong>Telegram</strong>、<strong>Discord</strong>、<strong>Slack</strong>。开源、自托管、MIT 许可证。',
+  docsOverviewDesc2: '支持 <strong>Claude Code</strong>、<strong>Codex CLI</strong>、<strong>Cursor CLI</strong>、<strong>Gemini CLI</strong>、<strong>OpenCode</strong> 等。支持 <strong>Telegram</strong>、<strong>Discord</strong>、<strong>Slack</strong>。开源、自托管、MIT 许可证。',
   docsOverviewDiagram: "  AI Agent (Claude Code, Codex CLI...)\n       │\n       ▼\n   ccpoke (hook server)\n       │\n       ├─► Telegram Bot  → 📱\n       ├─► Discord Bot   → 💬\n       └─► Slack Bot     → 📢",
 
   docsGettingStartedTitle: "快速开始",

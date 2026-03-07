@@ -146,7 +146,7 @@ const en = {
   docsFaq1Q: "Do I need to keep the terminal open?",
   docsFaq1A: "Yes — ccpoke runs a local hook server that your AI agent connects to. Keep it running in a terminal or use a process manager like <code>pm2</code> or <code>tmux</code>.",
   docsFaq2Q: "Which AI agents are supported?",
-  docsFaq2A: "Currently: <strong>Claude Code</strong>, <strong>Codex CLI</strong>, <strong>Cursor CLI</strong>, and <strong>Gemini CLI</strong>. More agents coming via the provider pattern.",
+  docsFaq2A: "Currently: <strong>Claude Code</strong>, <strong>Codex CLI</strong>, <strong>Cursor CLI</strong>, <strong>Gemini CLI</strong>, and <strong>OpenCode</strong>. More agents coming via the provider pattern.",
   docsFaq3Q: "Is it free?",
   docsFaq3A: "Yes, completely free and open-source under the MIT license. Self-hosted — your data stays on your machine.",
   docsFaq4Q: "Can I use it on Windows?",
@@ -179,7 +179,7 @@ const en = {
 
   docsOverviewTitle: "What is ccpoke?",
   docsOverviewDesc: "ccpoke is a two-way bridge between your AI coding agents and your phone. When your agent finishes a task, you get a push notification on Telegram, Discord, or Slack. Need to send a prompt, answer a question, or approve a permission? Do it right from your phone.",
-  docsOverviewDesc2: 'It works with <strong>Claude Code</strong>, <strong>Codex CLI</strong>, <strong>Cursor CLI</strong>, <strong>Gemini CLI</strong> and more. Supports <strong>Telegram</strong>, <strong>Discord</strong>, and <strong>Slack</strong>. Open-source, self-hosted, MIT licensed.',
+  docsOverviewDesc2: 'It works with <strong>Claude Code</strong>, <strong>Codex CLI</strong>, <strong>Cursor CLI</strong>, <strong>Gemini CLI</strong>, <strong>OpenCode</strong> and more. Supports <strong>Telegram</strong>, <strong>Discord</strong>, and <strong>Slack</strong>. Open-source, self-hosted, MIT licensed.',
   docsOverviewDiagram: "  AI Agent (Claude Code, Codex CLI...)\n       │\n       ▼\n   ccpoke (hook server)\n       │\n       ├─► Telegram Bot  → 📱\n       ├─► Discord Bot   → 💬\n       └─► Slack Bot     → 📢",
 
   docsGettingStartedTitle: "Getting Started",
