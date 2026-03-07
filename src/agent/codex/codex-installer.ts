@@ -39,7 +39,7 @@ function readNotifyArray(content: string): string[] {
 }
 
 function writeNotifyLine(entries: string[]): string {
-  const quoted = entries.map((e) => `"${e}"`).join(", ");
+  const quoted = entries.map((e) => `'${e}'`).join(", ");
   return `notify = [${quoted}]`;
 }
 
@@ -125,7 +125,7 @@ export class CodexInstaller {
     const agentParam = `?agent=${AgentName.Codex}`;
 
     if (isWindows()) {
-      const script = `@REM ccpoke-version: ${version}\n@echo off\necho %~1 | curl -s -X POST http://localhost:${hookPort}${ApiRoute.HookStop}${agentParam} -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" --data-binary @- > nul 2>&1\n`;
+      const script = `@REM ccpoke-version: ${version}\n@echo off\necho %~1 | curl -s -X POST http://localhost:${hookPort}${ApiRoute.HookStop}${agentParam} -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" --data-binary "%~1" > nul 2>&1\n`;
       writeFileSync(paths.codexHookScript, script, { mode: 0o644 });
       return;
     }
