@@ -103,7 +103,7 @@ async function startBot(): Promise<void> {
     sessionMap.load();
     const bootResult = sessionMap.refreshFromTmux(tmuxBridge);
     chatResolver = new TmuxSessionResolver(sessionMap, stateManager);
-    sessionMap.startPeriodicScan(tmuxBridge, 15_000, (result) => {
+    sessionMap.startPeriodicScan(tmuxBridge, 5_000, (result) => {
       for (const s of result.discovered)
         log(t("tmux.sessionDiscovered", { target: s.tmuxTarget, project: s.project }));
       for (const s of result.removed) {

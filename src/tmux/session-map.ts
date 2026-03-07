@@ -30,6 +30,7 @@ export interface TmuxSession {
 export interface ScanResult {
   discovered: TmuxSession[];
   removed: TmuxSession[];
+  reconciled: number;
   total: number;
 }
 
@@ -224,7 +225,18 @@ export class SessionMap {
       discovered.push(this.sessions.get(syntheticId)!);
     }
 
-    return { discovered, removed, total: this.sessions.size };
+    let reconciled = 0;
+    for (const session of this.sessions.values()) {
+      if (session.state !== SessionState.Busy) continue;
+      if (tmuxBridge.isAgentIdle(session.tmuxTarget, tree)) {
+        logDebug(`[Scan:reconcile] ${session.sessionId} Busy→Idle (process idle)`);
+        session.state = SessionState.Idle;
+        session.lastActivity = new Date();
+        reconciled++;
+      }
+    }
+
+    return { discovered, removed, reconciled, total: this.sessions.size };
   }
 
   startPeriodicScan(
@@ -236,7 +248,7 @@ export class SessionMap {
     this.scanInterval = setInterval(() => {
       try {
         const result = this.refreshFromTmux(tmuxBridge);
-        if (result.discovered.length > 0 || result.removed.length > 0) {
+        if (result.discovered.length > 0 || result.removed.length > 0 || result.reconciled > 0) {
           this.save();
         }
         onResult?.(result);
