@@ -103,6 +103,7 @@ export class GeminiCliInstaller {
 
     const script = `#!/bin/bash
 # ccpoke-version: ${version}
+CCPOKE_HOST="\${CCPOKE_HOST:-localhost}"
 INPUT=$(cat)
 echo '{}'
 (
@@ -116,7 +117,7 @@ if [ -n "$TMUX_TARGET" ] && echo "$TMUX_TARGET" | grep -qE '^[a-zA-Z0-9_.:/@ -]+
   ESCAPED_TARGET=$(printf '%s' "$TMUX_TARGET" | sed 's/[&/\\\\]/\\\\&/g')
   INPUT=$(echo "$INPUT" | sed 's/}$/,"tmux_target":"'"$ESCAPED_TARGET"'"}/')
 fi
-echo "$INPUT" | curl -s -X POST "http://localhost:${hookPort}${cfg.route}" \\
+echo "$INPUT" | curl -s -X POST "http://$CCPOKE_HOST:${hookPort}${cfg.route}" \\
   -H "Content-Type: application/json" \\
   -H "X-CCPoke-Secret: ${hookSecret}" \\
   --data-binary @- --max-time 5 > /dev/null 2>&1 || true

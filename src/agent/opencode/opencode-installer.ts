@@ -47,6 +47,7 @@ export class OpencodeInstaller {
 
     const plugin = `// ccpoke-version: ${version}
 export default async function({ $, client, directory, worktree }) {
+  const ccpokeHost = process.env.CCPOKE_HOST || "localhost";
   let cachedTmuxTarget = null;
   async function detectTmuxTarget() {
     if (cachedTmuxTarget !== null) return cachedTmuxTarget;
@@ -88,7 +89,7 @@ export default async function({ $, client, directory, worktree }) {
           tmux_target: tmuxTarget
         });
         try {
-          await $\`echo \${payload} | curl -s -X POST "http://localhost:${hookPort}${askRoute}" -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" --data-binary @- --max-time 5\`.nothrow().quiet();
+          await $\`echo \${payload} | curl -s -X POST "http://\${ccpokeHost}:${hookPort}${askRoute}" -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" --data-binary @- --max-time 5\`.nothrow().quiet();
         } catch {}
         return;
       }
@@ -104,7 +105,7 @@ export default async function({ $, client, directory, worktree }) {
           tmux_target: tmuxTarget
         });
         try {
-          await $\`echo \${payload} | curl -s -X POST "http://localhost:${hookPort}${permissionRoute}" -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" --data-binary @- --max-time 5\`.nothrow().quiet();
+          await $\`echo \${payload} | curl -s -X POST "http://\${ccpokeHost}:${hookPort}${permissionRoute}" -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" --data-binary @- --max-time 5\`.nothrow().quiet();
         } catch {}
         return;
       }
@@ -123,7 +124,7 @@ export default async function({ $, client, directory, worktree }) {
         tmux_target: tmuxTarget
       });
       try {
-        await $\`echo \${payload} | curl -s -X POST "http://localhost:${hookPort}${route}" -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" --data-binary @- --max-time 5\`.nothrow().quiet();
+        await $\`echo \${payload} | curl -s -X POST "http://\${ccpokeHost}:${hookPort}${route}" -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" --data-binary @- --max-time 5\`.nothrow().quiet();
       } catch {}
     }
   };

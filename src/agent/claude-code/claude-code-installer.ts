@@ -207,6 +207,7 @@ export class ClaudeCodeInstaller {
 
     const script = `#!/bin/bash
 # ccpoke-version: ${version}
+CCPOKE_HOST="\${CCPOKE_HOST:-localhost}"
 INPUT=$(cat | tr -d '\\n\\r')
 echo "$INPUT" | grep -q '"session_id"' || exit 0
 TMUX_TARGET=""
@@ -218,7 +219,7 @@ fi
 if [ -n "$TMUX_TARGET" ] && echo "$TMUX_TARGET" | grep -qE '^[a-zA-Z0-9_.:/@ -]+$'; then
   INPUT=$(echo "$INPUT" | sed 's/}$/,"tmux_target":"'"$TMUX_TARGET"'"}/')
 fi
-echo "$INPUT" | curl -s -X POST "http://localhost:${hookPort}${ApiRoute.HookStop}${agentParam}" \\
+echo "$INPUT" | curl -s -X POST "http://$CCPOKE_HOST:${hookPort}${ApiRoute.HookStop}${agentParam}" \\
   -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" \\
   --data-binary @- > /dev/null 2>&1 || true
 `;
@@ -241,6 +242,7 @@ echo "$INPUT" | curl -s -X POST "http://localhost:${hookPort}${ApiRoute.HookStop
     }
     const script = `#!/bin/bash
 # ccpoke-version: ${version}
+CCPOKE_HOST="\${CCPOKE_HOST:-localhost}"
 [ -z "$TMUX" ] && exit 0
 
 INPUT=$(cat)
@@ -261,7 +263,7 @@ json_escape() {
 PAYLOAD=$(printf '{"session_id":"%s","cwd":"%s","tmux_target":"%s"}' \\
   "$(json_escape "$SESSION_ID")" "$(json_escape "$CWD")" "$(json_escape "$TMUX_TARGET")")
 
-curl -s -X POST "http://127.0.0.1:${hookPort}${ApiRoute.HookSessionStart}" \\
+curl -s -X POST "http://$CCPOKE_HOST:${hookPort}${ApiRoute.HookSessionStart}" \\
   -H "Content-Type: application/json" \\
   -H "X-CCPoke-Secret: ${hookSecret}" \\
   -d "$PAYLOAD" \\
@@ -286,6 +288,7 @@ curl -s -X POST "http://127.0.0.1:${hookPort}${ApiRoute.HookSessionStart}" \\
     }
     const script = `#!/bin/bash
 # ccpoke-version: ${version}
+CCPOKE_HOST="\${CCPOKE_HOST:-localhost}"
 INPUT=$(cat)
 SESSION_ID=$(echo "$INPUT" | grep -o '"session_id":"[^"]*"' | head -1 | cut -d'"' -f4)
 [ -z "$SESSION_ID" ] && exit 0
@@ -304,7 +307,7 @@ else
   PAYLOAD="$INPUT"
 fi
 
-echo "$PAYLOAD" | curl -s -X POST "http://127.0.0.1:${hookPort}${ApiRoute.HookNotification}" \\
+echo "$PAYLOAD" | curl -s -X POST "http://$CCPOKE_HOST:${hookPort}${ApiRoute.HookNotification}" \\
   -H "Content-Type: application/json" \\
   -H "X-CCPoke-Secret: ${hookSecret}" \\
   --data-binary @- \\
@@ -329,6 +332,7 @@ echo "$PAYLOAD" | curl -s -X POST "http://127.0.0.1:${hookPort}${ApiRoute.HookNo
     }
     const script = `#!/bin/bash
 # ccpoke-version: ${version}
+CCPOKE_HOST="\${CCPOKE_HOST:-localhost}"
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name":"[^"]*"' | head -1 | cut -d'"' -f4)
 [ "$TOOL_NAME" != "AskUserQuestion" ] && exit 0
@@ -349,7 +353,7 @@ else
   PAYLOAD="$INPUT"
 fi
 
-echo "$PAYLOAD" | curl -s -X POST "http://127.0.0.1:${hookPort}${ApiRoute.HookAskUserQuestion}" \\
+echo "$PAYLOAD" | curl -s -X POST "http://$CCPOKE_HOST:${hookPort}${ApiRoute.HookAskUserQuestion}" \\
   -H "Content-Type: application/json" \\
   -H "X-CCPoke-Secret: ${hookSecret}" \\
   --data-binary @- \\
@@ -374,6 +378,7 @@ echo "$PAYLOAD" | curl -s -X POST "http://127.0.0.1:${hookPort}${ApiRoute.HookAs
     }
     const script = `#!/bin/bash
 # ccpoke-version: ${version}
+CCPOKE_HOST="\${CCPOKE_HOST:-localhost}"
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | grep -o '"tool_name":"[^"]*"' | head -1 | cut -d'"' -f4)
 [ "$TOOL_NAME" = "AskUserQuestion" ] && exit 0
@@ -394,7 +399,7 @@ else
   PAYLOAD="$INPUT"
 fi
 
-echo "$PAYLOAD" | curl -s -X POST "http://127.0.0.1:${hookPort}${ApiRoute.HookPermissionRequest}" \\
+echo "$PAYLOAD" | curl -s -X POST "http://$CCPOKE_HOST:${hookPort}${ApiRoute.HookPermissionRequest}" \\
   -H "Content-Type: application/json" \\
   -H "X-CCPoke-Secret: ${hookSecret}" \\
   --data-binary @- \\
