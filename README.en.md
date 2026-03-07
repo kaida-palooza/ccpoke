@@ -175,6 +175,14 @@ Fixed authentication bug in login.go. Main changes:
 - Add input validation...
 ```
 
+## Security & Tunnel
+
+ccpoke uses **Cloudflare Quick Tunnel** so that agent hooks from Docker containers or remote machines can reach the local server. Key security notes:
+
+- **Hook endpoints (internal)** — only used by agents calling back to ccpoke, protected by `X-CCPoke-Secret` (auto-generated, crypto hex random). Missing or wrong secret → `403 Forbidden`.
+- **Response endpoint protected by UUID v4** — IDs use `randomUUID()` (122-bit entropy, ~5.3 × 10³⁶ combinations), brute-force is infeasible. Responses auto-expire after 24h.
+- **Quick Tunnel URL is random** — format `https://random-words.trycloudflare.com`, changes on every restart, not fixed or publicly listed.
+
 ## Uninstall
 
 ```bash

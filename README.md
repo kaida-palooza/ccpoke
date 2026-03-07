@@ -175,6 +175,14 @@ Gửi `/projects` trên Telegram → chọn dự án → chọn agent (Claude Co
 - Thêm kiểm tra đầu vào...
 ```
 
+## Bảo mật & Tunnel
+
+ccpoke sử dụng **Cloudflare Quick Tunnel** để agent hook từ Docker container hoặc máy remote có thể gọi về local server. Một số điểm cần lưu ý:
+
+- **Hook endpoint (nội bộ)** — chỉ dùng để agent gọi về ccpoke, được bảo vệ bởi `X-CCPoke-Secret` (auto-generate, crypto hex random). Thiếu hoặc sai secret → `403 Forbidden`.
+- **Response endpoint bảo vệ bằng UUID v4** — ID dùng `randomUUID()` (122-bit entropy, ~5.3 × 10³⁶ tổ hợp), brute-force không khả thi. Response tự expire sau 24h.
+- **Quick Tunnel URL ngẫu nhiên** — URL dạng `https://random-words.trycloudflare.com`, thay đổi mỗi lần khởi động, không cố định và không public.
+
 ## Gỡ cài đặt
 
 ```bash

@@ -175,6 +175,14 @@ ccpoke project
 - 添加输入验证...
 ```
 
+## 安全与隧道
+
+ccpoke 使用 **Cloudflare Quick Tunnel**，使 Docker 容器或远程机器中的 agent hook 能够访问本地服务器。安全要点：
+
+- **Hook 端点（内部）** — 仅供 agent 回调 ccpoke 使用，由 `X-CCPoke-Secret` 保护（自动生成，加密十六进制随机）。缺少或错误的密钥 → `403 Forbidden`。
+- **Response 端点由 UUID v4 保护** — ID 使用 `randomUUID()`（122 位熵，~5.3 × 10³⁶ 种组合），暴力破解不可行。响应在 24 小时后自动过期。
+- **Quick Tunnel URL 是随机的** — 格式为 `https://random-words.trycloudflare.com`，每次重启都会变化，不固定且不公开。
+
 ## 卸载
 
 ```bash
