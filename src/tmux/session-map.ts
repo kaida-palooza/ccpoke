@@ -5,7 +5,7 @@ import { AgentName } from "../agent/types.js";
 import { logDebug } from "../utils/log.js";
 import { paths } from "../utils/paths.js";
 import type { TmuxBridge } from "./tmux-bridge.js";
-import { detectModelFromCwd, scanAgentPanes } from "./tmux-scanner.js";
+import { detectModelFromCwd, isPaneAlive, scanAgentPanes } from "./tmux-scanner.js";
 
 export const SessionState = {
   Idle: "idle",
@@ -182,10 +182,8 @@ export class SessionMap {
     const discovered: TmuxSession[] = [];
     const removed: TmuxSession[] = [];
 
-    const alivePaneTargets = new Set(panes.map((p) => p.target));
-
     for (const [id, session] of this.sessions) {
-      if (!alivePaneTargets.has(session.tmuxTarget)) {
+      if (!isPaneAlive(session.tmuxTarget)) {
         logDebug(
           `[Scan:remove] id=${id} tmuxTarget=${session.tmuxTarget} project=${session.project}`
         );

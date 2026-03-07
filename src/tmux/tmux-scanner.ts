@@ -19,7 +19,7 @@ export interface AgentPaneInfo extends TmuxPaneInfo {
 
 const FORMAT_STRING =
   "#{session_name}:#{window_index}.#{pane_index}|#{pane_title}|#{pane_current_path}|#{pane_pid}";
-const MAX_DESCENDANT_DEPTH = 4;
+const MAX_DESCENDANT_DEPTH = 8;
 
 interface ProcessEntry {
   pid: string;
