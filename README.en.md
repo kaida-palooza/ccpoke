@@ -217,3 +217,6 @@ MIT
 <a href="https://github.com/kabuto-png">
   <img src="https://github.com/kabuto-png.png" width="50" />
 </a>
+<a href="https://github.com/kokorolx">
+  <img src="https://github.com/kokorolx.png" width="50" />
+</a>
