@@ -1,6 +1,6 @@
 {
   "name": "ccpoke",
-  "version": "1.6.31",
+  "version": "1.7.0",
   "description": "Your AI agent pokes you when it's done — zero-config, one command: npx -y ccpoke",
   "type": "module",
   "packageManager": "pnpm@10.28.2",
