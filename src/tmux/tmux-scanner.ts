@@ -139,11 +139,6 @@ export function findAgentDescendant(panePid: string, tree?: ProcessTree): AgentN
   return search(panePid, 0);
 }
 
-/** @deprecated Use findAgentDescendant instead */
-export function hasClaudeDescendant(panePid: string, tree?: ProcessTree): boolean {
-  return findAgentDescendant(panePid, tree) !== null;
-}
-
 const SHELL_PATTERN = /\b(bash|zsh|sh|fish|powershell|pwsh|cmd)\b/;
 
 export function isAgentIdleByProcess(
@@ -183,11 +178,6 @@ export function isAgentIdleByProcess(
   return !children.some(
     (c) => SHELL_PATTERN.test(c.command) && (!excludePattern || !excludePattern.test(c.command))
   );
-}
-
-/** @deprecated Use isAgentIdleByProcess instead */
-export function isClaudeIdleByProcess(panePid: string, tree?: ProcessTree): boolean {
-  return isAgentIdleByProcess(panePid, AgentName.ClaudeCode, tree);
 }
 
 export interface AgentScanOutput {
@@ -267,11 +257,6 @@ export function scanAgentPanes(): AgentScanOutput {
   }
 }
 
-/** @deprecated Use scanAgentPanes instead */
-export function scanClaudePanes(): { panes: TmuxPaneInfo[]; tree: ProcessTree } {
-  return scanAgentPanes();
-}
-
 export function isAgentAliveInPane(target: string, tree?: ProcessTree): boolean {
   const sessionName = target.split(":")[0];
   if (!sessionName) return false;
@@ -297,11 +282,6 @@ export function isAgentAliveInPane(target: string, tree?: ProcessTree): boolean 
   } catch {
     return false;
   }
-}
-
-/** @deprecated Use isAgentAliveInPane instead */
-export function isClaudeAliveInPane(target: string, tree?: ProcessTree): boolean {
-  return isAgentAliveInPane(target, tree);
 }
 
 export function isPaneAlive(target: string): boolean {

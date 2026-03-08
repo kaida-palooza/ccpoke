@@ -186,7 +186,7 @@ export class TmuxBridge {
     const tgt = escapeShellArg(paneTarget);
 
     busyWaitMs(200);
-    const commands = [`cd ${cwd}`, "cls"];
+    const commands = [`cd /d "${cwd}"`, "cls"];
     for (const cmd of commands) {
       execSync(`${bin} send-keys -t ${tgt} -l ${escapeTmuxText(cmd)}`, {
         stdio: "pipe",

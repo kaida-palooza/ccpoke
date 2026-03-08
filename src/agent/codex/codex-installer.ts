@@ -10,6 +10,7 @@ import { dirname } from "node:path";
 
 import { ApiRoute, isWindows } from "../../utils/constants.js";
 import { getPackageVersion, paths, toPosixPath } from "../../utils/paths.js";
+import { buildWindowsHookScript } from "../../utils/windows-hook-script-builder.js";
 import { AgentName } from "../types.js";
 
 const VERSION_HEADER_PATTERN = /^#\s*ccpoke-version:\s*(\S+)/;
@@ -125,8 +126,17 @@ export class CodexInstaller {
     const agentParam = `?agent=${AgentName.Codex}`;
 
     if (isWindows()) {
-      const script = `@REM ccpoke-version: ${version}\r\n@echo off\r\nif not defined CCPOKE_HOST set CCPOKE_HOST=localhost\r\ncurl -s -X POST http://%CCPOKE_HOST%:${hookPort}${ApiRoute.HookStop}${agentParam} -H "Content-Type: application/json" -H "X-CCPoke-Secret: ${hookSecret}" -d "%~1" > nul 2>&1\r\n`;
-      writeFileSync(paths.codexHookScript, script, { mode: 0o644 });
+      writeFileSync(
+        paths.codexHookScript,
+        buildWindowsHookScript(
+          version,
+          hookPort,
+          `${ApiRoute.HookStop}${agentParam}`,
+          hookSecret,
+          "argument"
+        ),
+        { mode: 0o644 }
+      );
       return;
     }
 
