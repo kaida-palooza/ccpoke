@@ -11,6 +11,7 @@ import qrcode from "qrcode-terminal";
 import { createDefaultRegistry } from "../agent/agent-registry.js";
 import { AgentName } from "../agent/types.js";
 import { ConfigManager, type Config } from "../config-manager.js";
+import { HookEnvWriter } from "../hooks/hook-env-writer.js";
 import { Locale, LOCALE_LABELS, setLocale, SUPPORTED_LOCALES, t } from "../i18n/index.js";
 import { resetTmuxBinaryCache } from "../tmux/tmux-bridge.js";
 import {
@@ -282,6 +283,7 @@ function saveConfig(config: Config): void {
 
 function syncAgentHooks(config: Config, previousAgents: string[]): void {
   const registry = createDefaultRegistry();
+  HookEnvWriter.write(config.hook_port, config.hook_secret);
 
   const removedAgents = previousAgents.filter((a) => !config.agents.includes(a));
   for (const agentName of removedAgents) {
@@ -311,7 +313,7 @@ function syncAgentHooks(config: Config, previousAgents: string[]): void {
     }
 
     try {
-      provider.installHook(config.hook_port, config.hook_secret);
+      provider.installHook();
       p.log.success(t("setup.agentHookInstalled", { agent: provider.displayName }));
     } catch (err: unknown) {
       p.log.error(

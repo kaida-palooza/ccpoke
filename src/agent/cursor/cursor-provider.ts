@@ -34,8 +34,8 @@ export class CursorProvider implements AgentProvider {
     return CursorInstaller.isInstalled();
   }
 
-  installHook(port: number, secret: string): void {
-    CursorInstaller.install(port, secret);
+  installHook(): void {
+    CursorInstaller.install();
   }
 
   uninstallHook(): void {

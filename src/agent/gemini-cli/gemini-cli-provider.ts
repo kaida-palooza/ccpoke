@@ -31,8 +31,8 @@ export class GeminiCliProvider implements AgentProvider {
     return GeminiCliInstaller.isInstalled();
   }
 
-  installHook(port: number, secret: string): void {
-    GeminiCliInstaller.install(port, secret);
+  installHook(): void {
+    GeminiCliInstaller.install();
   }
 
   uninstallHook(): void {

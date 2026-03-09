@@ -33,8 +33,8 @@ export class CodexProvider implements AgentProvider {
     return CodexInstaller.isInstalled();
   }
 
-  installHook(port: number, secret: string): void {
-    CodexInstaller.install(port, secret);
+  installHook(): void {
+    CodexInstaller.install();
   }
 
   uninstallHook(): void {

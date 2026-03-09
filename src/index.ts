@@ -14,6 +14,7 @@ import { runSetup } from "./commands/setup.js";
 import { runUninstall } from "./commands/uninstall.js";
 import { runUpdate } from "./commands/update.js";
 import { ConfigManager, type Config } from "./config-manager.js";
+import { HookEnvWriter } from "./hooks/hook-env-writer.js";
 import { t } from "./i18n/index.js";
 import { ApiServer } from "./server/api-server.js";
 import { SessionMap } from "./tmux/session-map.js";
@@ -55,6 +56,7 @@ async function loadOrSetupConfig(): Promise<Config> {
 
 function ensureAgentHooks(config: Config): void {
   const registry = createDefaultRegistry();
+  HookEnvWriter.write(config.hook_port, config.hook_secret);
 
   for (const agentName of config.agents) {
     const provider = registry.resolve(agentName);
@@ -68,7 +70,7 @@ function ensureAgentHooks(config: Config): void {
       continue;
     }
 
-    provider.installHook(config.hook_port, config.hook_secret);
+    provider.installHook();
     log(
       t("tmux.hookRepaired", { agent: provider.displayName, missing: integrity.missing.join(", ") })
     );

@@ -6,6 +6,7 @@ import * as p from "@clack/prompts";
 
 import { createDefaultRegistry } from "../agent/agent-registry.js";
 import { ConfigManager } from "../config-manager.js";
+import { HookEnvWriter } from "../hooks/hook-env-writer.js";
 import { t } from "../i18n/index.js";
 import { InstallMethod, PackageManager } from "../utils/constants.js";
 import {
@@ -164,10 +165,11 @@ function refreshHooks(): void {
   try {
     const config = ConfigManager.load();
     const registry = createDefaultRegistry();
+    HookEnvWriter.write(config.hook_port, config.hook_secret);
     for (const agentName of config.agents) {
       const provider = registry.resolve(agentName);
       if (!provider?.detect()) continue;
-      provider.installHook(config.hook_port, config.hook_secret);
+      provider.installHook();
     }
     p.log.success(t("update.hooksRefreshed"));
   } catch {

@@ -26,8 +26,8 @@ export class OpencodeProvider implements AgentProvider {
     return OpencodeInstaller.isInstalled();
   }
 
-  installHook(port: number, secret: string): void {
-    OpencodeInstaller.install(port, secret);
+  installHook(): void {
+    OpencodeInstaller.install();
   }
 
   uninstallHook(): void {

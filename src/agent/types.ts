@@ -25,7 +25,7 @@ export interface AgentProvider {
 
   detect(): boolean;
   isHookInstalled(): boolean;
-  installHook(port: number, secret: string): void;
+  installHook(): void;
   uninstallHook(): void;
   parseEvent(raw: unknown): AgentEventResult;
   verifyIntegrity(): { complete: boolean; missing: string[] };

@@ -29,8 +29,8 @@ export class ClaudeCodeProvider implements AgentProvider {
     return ClaudeCodeInstaller.isInstalled();
   }
 
-  installHook(port: number, secret: string): void {
-    ClaudeCodeInstaller.install(port, secret);
+  installHook(): void {
+    ClaudeCodeInstaller.install();
   }
 
   uninstallHook(): void {

@@ -1,17 +1,22 @@
-import { mkdirSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
+import { HookScriptCopier } from "../../hooks/hook-script-copier.js";
 import { isWindows } from "../../utils/constants.js";
-import { getPackageVersion, paths, toPosixPath } from "../../utils/paths.js";
-import { buildWindowsHookScript } from "../../utils/windows-hook-script-builder.js";
+import { paths, toPosixPath } from "../../utils/paths.js";
 import {
   buildHookConfigs,
   hasCcpokeHook,
   isScriptCurrent,
   isScriptPresent,
   readGeminiSettings,
-  type HookEventConfig,
 } from "./gemini-cli-settings.js";
+
+const GEMINI_SOURCE_MAP: Record<string, string> = {
+  "ccpoke-stop": "gemini-stop",
+  "ccpoke-session-start": "gemini-session-start",
+  "ccpoke-notification": "gemini-notification",
+};
 
 export class GeminiCliInstaller {
   static isInstalled(): boolean {
@@ -37,10 +42,14 @@ export class GeminiCliInstaller {
       missing.push("settings.json");
     }
 
+    const ext = isWindows() ? ".cmd" : ".sh";
+
     for (const cfg of buildHookConfigs()) {
+      const baseName = GEMINI_SOURCE_MAP[cfg.hookName];
+      const sourceFile = baseName ? `${baseName}${ext}` : undefined;
       if (!isScriptPresent(cfg.scriptPath)) {
         missing.push(`${cfg.hookName} script file`);
-      } else if (!isScriptCurrent(cfg.scriptPath)) {
+      } else if (sourceFile && !isScriptCurrent(cfg.scriptPath, sourceFile)) {
         missing.push(`outdated ${cfg.hookName} script`);
       }
     }
@@ -48,7 +57,7 @@ export class GeminiCliInstaller {
     return { complete: missing.length === 0, missing };
   }
 
-  static install(hookPort: number, hookSecret: string): void {
+  static install(): void {
     GeminiCliInstaller.uninstall();
 
     const settings = readGeminiSettings();
@@ -75,63 +84,26 @@ export class GeminiCliInstaller {
     writeFileSync(tmp, JSON.stringify(settings, null, 2));
     renameSync(tmp, paths.geminiSettings);
 
-    for (const cfg of buildHookConfigs()) {
-      GeminiCliInstaller.writeScript(cfg, hookPort, hookSecret);
-    }
+    GeminiCliInstaller.copyScripts();
   }
 
   static uninstall(): void {
     GeminiCliInstaller.removeFromSettings();
     for (const cfg of buildHookConfigs()) {
-      GeminiCliInstaller.removeScript(cfg.scriptPath);
+      HookScriptCopier.remove(cfg.scriptPath);
     }
   }
 
-  private static writeScript(cfg: HookEventConfig, hookPort: number, hookSecret: string): void {
-    mkdirSync(paths.hooksDir, { recursive: true });
+  private static copyScripts(): void {
+    HookScriptCopier.copyLib();
+    const ext = isWindows() ? ".cmd" : ".sh";
 
-    const version = getPackageVersion();
-
-    if (isWindows()) {
-      writeFileSync(
-        cfg.scriptPath,
-        buildWindowsHookScript(version, hookPort, cfg.route, hookSecret),
-        { mode: 0o644 }
-      );
-      return;
-    }
-
-    const script = `#!/bin/bash
-# ccpoke-version: ${version}
-CCPOKE_HOST="\${CCPOKE_HOST:-localhost}"
-INPUT=$(cat)
-echo '{}'
-(
-TMUX_TARGET=""
-if [ -n "$TMUX_PANE" ]; then
-  TMUX_TARGET=$(tmux display-message -t "$TMUX_PANE" -p '#{session_name}:#{window_index}.#{pane_index}' 2>/dev/null || echo "")
-elif [ -n "$TMUX" ]; then
-  TMUX_TARGET=$(tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}' 2>/dev/null || echo "")
-fi
-if [ -n "$TMUX_TARGET" ] && echo "$TMUX_TARGET" | grep -qE '^[a-zA-Z0-9_.:/@ -]+$'; then
-  ESCAPED_TARGET=$(printf '%s' "$TMUX_TARGET" | sed 's/[&/\\\\]/\\\\&/g')
-  INPUT=$(echo "$INPUT" | sed 's/}$/,"tmux_target":"'"$ESCAPED_TARGET"'"}/')
-fi
-echo "$INPUT" | curl -s -X POST "http://$CCPOKE_HOST:${hookPort}${cfg.route}" \\
-  -H "Content-Type: application/json" \\
-  -H "X-CCPoke-Secret: ${hookSecret}" \\
-  --data-binary @- --max-time 5 > /dev/null 2>&1 || true
-) &
-`;
-
-    writeFileSync(cfg.scriptPath, script, { mode: 0o700 });
-  }
-
-  private static removeScript(scriptPath: string): void {
-    try {
-      unlinkSync(scriptPath);
-    } catch {
-      /* may not exist */
+    for (const cfg of buildHookConfigs()) {
+      const baseName = GEMINI_SOURCE_MAP[cfg.hookName];
+      const sourceFile = baseName ? `${baseName}${ext}` : undefined;
+      if (sourceFile) {
+        HookScriptCopier.copy(sourceFile, cfg.scriptPath);
+      }
     }
   }
 

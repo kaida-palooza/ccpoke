@@ -1,12 +1,8 @@
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 
-import { ApiRoute, isWindows } from "../../utils/constants.js";
-import { getPackageVersion, paths, toPosixPath } from "../../utils/paths.js";
-import { buildWindowsHookScript } from "../../utils/windows-hook-script-builder.js";
-import { AgentName } from "../types.js";
-
-const VERSION_HEADER_PATTERN = /^#\s*ccpoke-version:\s*(\S+)/;
-const VERSION_HEADER_PATTERN_WIN = /^@REM\s+ccpoke-version:\s*(\S+)/;
+import { HookScriptCopier } from "../../hooks/hook-script-copier.js";
+import { isWindows } from "../../utils/constants.js";
+import { paths, toPosixPath } from "../../utils/paths.js";
 
 interface CursorStopHook {
   command: string;
@@ -33,20 +29,6 @@ function hasExactHookPath(stopHooks: CursorStopHook[]): boolean {
   return stopHooks.some((entry) => typeof entry.command === "string" && entry.command === expected);
 }
 
-function readScriptVersion(scriptPath: string): string | null {
-  try {
-    const content = readFileSync(scriptPath, "utf-8");
-    const lines = content.split("\n");
-    for (const line of lines.slice(0, 3)) {
-      const match = line.match(VERSION_HEADER_PATTERN) ?? line.match(VERSION_HEADER_PATTERN_WIN);
-      if (match) return match[1] ?? null;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 export class CursorInstaller {
   static isInstalled(): boolean {
     try {
@@ -59,7 +41,7 @@ export class CursorInstaller {
     }
   }
 
-  static install(hookPort: number, hookSecret: string): void {
+  static install(): void {
     mkdirSync(paths.cursorDir, { recursive: true });
 
     const config = CursorInstaller.readConfig();
@@ -79,8 +61,13 @@ export class CursorInstaller {
     config.hooks.stop = filtered;
     if (!config.version) config.version = 1;
 
-    writeFileSync(paths.cursorHooksJson, JSON.stringify(config, null, 2));
-    CursorInstaller.writeScript(hookPort, hookSecret);
+    const tmp = `${paths.cursorHooksJson}.tmp`;
+    writeFileSync(tmp, JSON.stringify(config, null, 2));
+    renameSync(tmp, paths.cursorHooksJson);
+
+    HookScriptCopier.copyLib();
+    const ext = isWindows() ? ".cmd" : ".sh";
+    HookScriptCopier.copy(`cursor-stop${ext}`, paths.cursorHookScript);
   }
 
   static verifyIntegrity(): { complete: boolean; missing: string[] } {
@@ -97,8 +84,11 @@ export class CursorInstaller {
 
     if (!existsSync(paths.cursorHookScript)) {
       missing.push("stop script file");
-    } else if (readScriptVersion(paths.cursorHookScript) !== getPackageVersion()) {
-      missing.push("outdated stop script");
+    } else {
+      const ext = isWindows() ? ".cmd" : ".sh";
+      if (HookScriptCopier.needsCopy(`cursor-stop${ext}`, paths.cursorHookScript)) {
+        missing.push("outdated stop script");
+      }
     }
 
     return { complete: missing.length === 0, missing };
@@ -106,52 +96,7 @@ export class CursorInstaller {
 
   static uninstall(): void {
     CursorInstaller.removeFromHooksJson();
-    CursorInstaller.removeScript();
-  }
-
-  private static writeScript(hookPort: number, hookSecret: string): void {
-    mkdirSync(paths.hooksDir, { recursive: true });
-
-    const agentParam = `?agent=${AgentName.Cursor}`;
-    const version = getPackageVersion();
-    if (isWindows()) {
-      writeFileSync(
-        paths.cursorHookScript,
-        buildWindowsHookScript(version, hookPort, `${ApiRoute.HookStop}${agentParam}`, hookSecret),
-        { mode: 0o644 }
-      );
-      return;
-    }
-
-    const script = `#!/bin/bash
-# ccpoke-version: ${version}
-CCPOKE_HOST="\${CCPOKE_HOST:-localhost}"
-INPUT=$(cat | tr -d '\\n\\r')
-[ -z "$INPUT" ] && exit 0
-TMUX_TARGET=""
-if [ -n "$TMUX_PANE" ]; then
-  TMUX_TARGET=$(tmux display-message -t "$TMUX_PANE" -p '#{session_name}:#{window_index}.#{pane_index}' 2>/dev/null || echo "")
-elif [ -n "$TMUX" ]; then
-  TMUX_TARGET=$(tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}' 2>/dev/null || echo "")
-fi
-if [ -n "$TMUX_TARGET" ] && echo "$TMUX_TARGET" | grep -qE '^[a-zA-Z0-9_.:/@ -]+$'; then
-  INPUT=$(echo "$INPUT" | sed 's/}$/,"tmux_target":"'"$TMUX_TARGET"'"}/')
-fi
-echo "$INPUT" | curl -s -X POST "http://$CCPOKE_HOST:${hookPort}${ApiRoute.HookStop}${agentParam}" \\
-  -H "Content-Type: application/json" \\
-  -H "X-CCPoke-Secret: ${hookSecret}" \\
-  --data-binary @- > /dev/null 2>&1 || true
-`;
-
-    writeFileSync(paths.cursorHookScript, script, { mode: 0o700 });
-  }
-
-  private static removeScript(): void {
-    try {
-      unlinkSync(paths.cursorHookScript);
-    } catch {
-      // script may not exist
-    }
+    HookScriptCopier.remove(paths.cursorHookScript);
   }
 
   private static removeFromHooksJson(): void {
@@ -174,7 +119,9 @@ echo "$INPUT" | curl -s -X POST "http://$CCPOKE_HOST:${hookPort}${ApiRoute.HookS
       delete config.hooks;
     }
 
-    writeFileSync(paths.cursorHooksJson, JSON.stringify(config, null, 2));
+    const tmp = `${paths.cursorHooksJson}.tmp`;
+    writeFileSync(tmp, JSON.stringify(config, null, 2));
+    renameSync(tmp, paths.cursorHooksJson);
   }
 
   private static readConfig(): CursorHooksConfig {

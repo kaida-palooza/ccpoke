@@ -1,34 +1,12 @@
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  renameSync,
-  unlinkSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-import { ApiRoute, isWindows } from "../../utils/constants.js";
-import { getPackageVersion, paths, toPosixPath } from "../../utils/paths.js";
-import { buildWindowsHookScript } from "../../utils/windows-hook-script-builder.js";
-import { AgentName } from "../types.js";
+import { HookScriptCopier } from "../../hooks/hook-script-copier.js";
+import { isWindows } from "../../utils/constants.js";
+import { paths, toPosixPath } from "../../utils/paths.js";
 
-const VERSION_HEADER_PATTERN = /^#\s*ccpoke-version:\s*(\S+)/;
 const NOTIFY_LINE_PATTERN = /^notify\s*=\s*\[([\s\S]*?)\]/m;
 const CCPOKE_MARKER = "ccpoke";
-
-function readScriptVersion(scriptPath: string): string | null {
-  try {
-    const lines = readFileSync(scriptPath, "utf-8").split("\n");
-    for (const line of lines.slice(0, 3)) {
-      const match = line.match(VERSION_HEADER_PATTERN);
-      if (match) return match[1] ?? null;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 function readNotifyArray(content: string): string[] {
   const match = content.match(NOTIFY_LINE_PATTERN);
@@ -70,7 +48,7 @@ export class CodexInstaller {
     }
   }
 
-  static install(hookPort: number, hookSecret: string): void {
+  static install(): void {
     let content = readConfigFile();
     const entries = readNotifyArray(content).filter((e) => !e.includes(CCPOKE_MARKER));
     entries.push(toPosixPath(paths.codexHookScript));
@@ -89,12 +67,15 @@ export class CodexInstaller {
     }
 
     writeConfigFile(content);
-    CodexInstaller.writeScript(hookPort, hookSecret);
+
+    HookScriptCopier.copyLib();
+    const ext = isWindows() ? ".cmd" : ".sh";
+    HookScriptCopier.copy(`codex-notify${ext}`, paths.codexHookScript);
   }
 
   static uninstall(): void {
     CodexInstaller.removeFromConfig();
-    CodexInstaller.removeScript();
+    HookScriptCopier.remove(paths.codexHookScript);
   }
 
   static verifyIntegrity(): { complete: boolean; missing: string[] } {
@@ -112,63 +93,14 @@ export class CodexInstaller {
 
     if (!existsSync(paths.codexHookScript)) {
       missing.push("notify script file");
-    } else if (readScriptVersion(paths.codexHookScript) !== getPackageVersion()) {
-      missing.push("outdated notify script");
+    } else {
+      const ext = isWindows() ? ".cmd" : ".sh";
+      if (HookScriptCopier.needsCopy(`codex-notify${ext}`, paths.codexHookScript)) {
+        missing.push("outdated notify script");
+      }
     }
 
     return { complete: missing.length === 0, missing };
-  }
-
-  private static writeScript(hookPort: number, hookSecret: string): void {
-    mkdirSync(paths.hooksDir, { recursive: true });
-
-    const version = getPackageVersion();
-    const agentParam = `?agent=${AgentName.Codex}`;
-
-    if (isWindows()) {
-      writeFileSync(
-        paths.codexHookScript,
-        buildWindowsHookScript(
-          version,
-          hookPort,
-          `${ApiRoute.HookStop}${agentParam}`,
-          hookSecret,
-          "argument"
-        ),
-        { mode: 0o644 }
-      );
-      return;
-    }
-
-    const script = `#!/bin/bash
-# ccpoke-version: ${version}
-CCPOKE_HOST="\${CCPOKE_HOST:-localhost}"
-JSON="$1"
-[ -z "$JSON" ] && exit 0
-TMUX_TARGET=""
-if [ -n "$TMUX_PANE" ]; then
-  TMUX_TARGET=$(tmux display-message -t "$TMUX_PANE" -p '#{session_name}:#{window_index}.#{pane_index}' 2>/dev/null || echo "")
-elif [ -n "$TMUX" ]; then
-  TMUX_TARGET=$(tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}' 2>/dev/null || echo "")
-fi
-if [ -n "$TMUX_TARGET" ] && echo "$TMUX_TARGET" | grep -qE '^[a-zA-Z0-9_.:/@ -]+$'; then
-  JSON=$(echo "$JSON" | sed 's/}$/,"tmux_target":"'"$TMUX_TARGET"'"}/')
-fi
-echo "$JSON" | curl -s -X POST "http://$CCPOKE_HOST:${hookPort}${ApiRoute.HookStop}${agentParam}" \\
-  -H "Content-Type: application/json" \\
-  -H "X-CCPoke-Secret: ${hookSecret}" \\
-  --data-binary @- > /dev/null 2>&1 || true
-`;
-
-    writeFileSync(paths.codexHookScript, script, { mode: 0o700 });
-  }
-
-  private static removeScript(): void {
-    try {
-      unlinkSync(paths.codexHookScript);
-    } catch {
-      /* noop */
-    }
   }
 
   private static removeFromConfig(): void {

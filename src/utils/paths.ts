@@ -19,11 +19,16 @@ export const paths = {
   projectRoot: PROJECT_ROOT,
 
   packageJson: join(PROJECT_ROOT, "package.json"),
+  lockFile: join(PROJECT_ROOT, "ccpoke-lock.json"),
 
   ccpokeDir: CCPOKE_HOME,
   configFile: join(CCPOKE_HOME, "config.json"),
   stateFile: join(CCPOKE_HOME, "state.json"),
   hooksDir: join(CCPOKE_HOME, "hooks"),
+  hookEnvFile: join(CCPOKE_HOME, "hooks", ".env"),
+  hookEnvCmdFile: join(CCPOKE_HOME, "hooks", ".env.cmd"),
+  hookLibDir: join(CCPOKE_HOME, "hooks", "lib"),
+  hookSourceDir: join(PROJECT_ROOT, "hooks"),
   responsesDir: join(CCPOKE_HOME, "responses"),
   completionsDir: join(CCPOKE_HOME, "completions"),
   zshCompletion: join(CCPOKE_HOME, "completions", "_ccpoke"),
