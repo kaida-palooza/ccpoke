@@ -63,7 +63,7 @@ export const vi: TranslationKeys = {
     completeAutoStart: "🎉 Setup hoàn tất! Đang khởi động bot...",
     languageMessage: "Ngôn ngữ",
     tokenUnchanged: "Token không đổi — bỏ qua xác thực",
-    selectAgents: "Chọn AI agents (ấn cách để chọn)",
+    selectAgents: "Hãy chọn AI agents đã phát hiện được trong máy bạn (ấn cách để chọn)",
     agentDetected: "đã phát hiện",
     agentNotInstalled: "{agent} chưa được cài trên máy này",
     agentHookInstalled: "Đã cài hook cho {agent}",

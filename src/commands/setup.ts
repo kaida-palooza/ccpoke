@@ -222,20 +222,26 @@ async function promptAgents(previousAgents: string[]): Promise<string[]> {
   const registry = createDefaultRegistry();
   const providers = registry.all();
 
-  const initialValues = previousAgents.length > 0 ? previousAgents : [AgentName.ClaudeCode];
+  const detectedNames = new Set(providers.filter((p) => p.detect()).map((p) => p.name));
 
-  const options = providers.map((provider) => {
-    const installed = provider.detect();
-    const label = installed
-      ? `${provider.displayName} (${t("setup.agentDetected")})`
-      : `${provider.displayName} ⚠️`;
+  const initialValues =
+    previousAgents.length > 0
+      ? previousAgents.filter((a) => detectedNames.has(a as AgentName))
+      : detectedNames.has(AgentName.ClaudeCode)
+        ? [AgentName.ClaudeCode]
+        : [];
 
-    return {
+  const options = providers
+    .filter((provider) => detectedNames.has(provider.name))
+    .map((provider) => ({
       value: provider.name,
-      label,
-      hint: installed ? "" : t("setup.agentNotInstalled", { agent: provider.displayName }),
-    };
-  });
+      label: provider.displayName,
+    }));
+
+  if (options.length === 0) {
+    p.log.warn(t("setup.agentNotInstalled", { agent: "any agent" }));
+    return [];
+  }
 
   const result = await p.multiselect({
     message: t("setup.selectAgents"),
@@ -249,12 +255,7 @@ async function promptAgents(previousAgents: string[]): Promise<string[]> {
     process.exit(0);
   }
 
-  const selected = result as string[];
-  if (!selected.includes(AgentName.ClaudeCode)) {
-    selected.unshift(AgentName.ClaudeCode);
-  }
-
-  return selected;
+  return result as string[];
 }
 
 function buildConfig(
