@@ -11,7 +11,7 @@ import {
 import type { PermissionRequestEvent } from "../../agent/agent-handler.js";
 import type { SessionMap } from "../../tmux/session-map.js";
 import type { TmuxBridge } from "../../tmux/tmux-bridge.js";
-import { log, logDebug, logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import { summarizeTool } from "../summarize-tool.js";
 
 interface PendingPermission {
@@ -44,7 +44,7 @@ export class DiscordPermissionHandler {
     const channel = this.getChannel();
     if (!channel || !event.tmuxTarget) return;
 
-    log(
+    logger.info(
       `[Discord:PermReq] sessionId=${event.sessionId} tmuxTarget=${event.tmuxTarget} tool=${event.toolName}`
     );
 
@@ -93,7 +93,7 @@ export class DiscordPermissionHandler {
     );
 
     await channel.send({ embeds: [embed], components: [row] }).catch((err: unknown) => {
-      logError("[Discord:PermReq] send failed", err);
+      logger.error({ err }, "[Discord:PermReq] send failed");
     });
   }
 
@@ -125,9 +125,9 @@ export class DiscordPermissionHandler {
 
     try {
       await injectResponse(this.tmuxBridge, pp.tmuxTarget, allow);
-      logDebug(`[Discord:PermReq] injected ${allow ? "allow" : "deny"} → ${pp.tmuxTarget}`);
+      logger.debug(`[Discord:PermReq] injected ${allow ? "allow" : "deny"} → ${pp.tmuxTarget}`);
     } catch (err) {
-      logError("[Discord:PermReq] injection failed", err);
+      logger.error({ err }, "[Discord:PermReq] injection failed");
     }
 
     await interaction.editReply({ embeds: [updatedEmbed], components: [] }).catch(() => {});

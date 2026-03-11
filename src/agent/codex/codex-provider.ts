@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 
 import { collectGitChanges } from "../../utils/git-collector.js";
-import { logDebug } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import { paths } from "../../utils/paths.js";
 import {
   AGENT_DISPLAY_NAMES,
@@ -51,7 +51,7 @@ export class CodexProvider implements AgentProvider {
     }
 
     const event = parseNotifyEvent(raw);
-    logDebug(`[Codex:raw] threadId=${event.threadId} cwd=${event.cwd}`);
+    logger.debug(`[Codex:raw] threadId=${event.threadId} cwd=${event.cwd}`);
 
     let rollout = { model: "" };
     try {

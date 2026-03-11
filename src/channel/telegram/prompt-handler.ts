@@ -5,7 +5,7 @@ import type { AgentRegistry } from "../../agent/agent-registry.js";
 import { t } from "../../i18n/index.js";
 import { SessionState, type SessionMap } from "../../tmux/session-map.js";
 import type { TmuxBridge } from "../../tmux/tmux-bridge.js";
-import { log } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import { escapeMarkdownV2 } from "./escape-markdown.js";
 
 interface PendingPrompt {
@@ -43,7 +43,7 @@ export class PromptHandler {
     if (!session) return false;
 
     if (!this.pending.has(sessionId)) return false;
-    log(
+    logger.info(
       `[Prompt:inject] sessionId=${sessionId} tmuxTarget=${session.tmuxTarget} text="${text.slice(0, 50)}"`
     );
 

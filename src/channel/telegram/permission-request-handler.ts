@@ -4,7 +4,7 @@ import type { PermissionRequestEvent } from "../../agent/agent-handler.js";
 import { t } from "../../i18n/index.js";
 import type { SessionMap } from "../../tmux/session-map.js";
 import type { TmuxBridge } from "../../tmux/tmux-bridge.js";
-import { log, logDebug, logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import { summarizeTool } from "../summarize-tool.js";
 import { escapeMarkdownV2 } from "./escape-markdown.js";
 
@@ -37,7 +37,7 @@ export class PermissionRequestHandler {
     const chat = this.chatId();
     if (!chat || !event.tmuxTarget) return;
 
-    log(
+    logger.info(
       `[PermReq] sessionId=${event.sessionId} tmuxTarget=${event.tmuxTarget} tool=${event.toolName}`
     );
 
@@ -74,7 +74,7 @@ export class PermissionRequestHandler {
 
     await this.bot
       .sendMessage(chat, text, { parse_mode: "MarkdownV2", reply_markup: keyboard })
-      .catch((err: unknown) => logError("[PermReq] send failed", err));
+      .catch((err: unknown) => logger.error({ err }, "[PermReq] send failed"));
   }
 
   async handleCallback(query: TelegramBot.CallbackQuery): Promise<void> {
@@ -123,9 +123,9 @@ export class PermissionRequestHandler {
 
     try {
       await this.injectResponse(pp.tmuxTarget, allow);
-      logDebug(`[PermReq] injected ${allow ? "allow" : "deny"} → ${pp.tmuxTarget}`);
+      logger.debug(`[PermReq] injected ${allow ? "allow" : "deny"} → ${pp.tmuxTarget}`);
     } catch (err) {
-      logError(t("permissionRequest.injectionFailed"), err);
+      logger.error({ err }, t("permissionRequest.injectionFailed"));
     }
 
     this.clearPending(pendingId);

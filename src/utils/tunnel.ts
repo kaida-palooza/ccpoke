@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 
 import { t } from "../i18n/index.js";
-import { log, logWarn } from "./log.js";
+import { logger } from "./log.js";
 
 const TUNNEL_TIMEOUT_MS = 30_000;
 const MAX_RETRIES = 3;
@@ -36,7 +36,7 @@ export class TunnelManager {
 
       if (attempt > 0) {
         const delay = RETRY_DELAYS_MS[attempt - 1]!;
-        log(t("tunnel.retrying", { attempt, max: MAX_RETRIES, seconds: delay / 1000 }));
+        logger.info(t("tunnel.retrying", { attempt, max: MAX_RETRIES, seconds: delay / 1000 }));
         await this.sleep(delay);
         if (this.stopped) throw new Error("tunnel stopped");
       }
@@ -45,7 +45,7 @@ export class TunnelManager {
         return await this.connect();
       } catch (err) {
         lastError = err instanceof Error ? err : new Error(String(err));
-        logWarn(t("tunnel.attemptFailed", { attempt: attempt + 1, error: lastError.message }));
+        logger.warn(t("tunnel.attemptFailed", { attempt: attempt + 1, error: lastError.message }));
       }
     }
 
@@ -56,9 +56,9 @@ export class TunnelManager {
     const { Tunnel, bin, install } = await import("cloudflared");
 
     if (!existsSync(bin)) {
-      log(t("tunnel.installing"));
+      logger.info(t("tunnel.installing"));
       await install(bin);
-      log(t("tunnel.installed"));
+      logger.info(t("tunnel.installed"));
     }
 
     this.cleanup();
@@ -85,19 +85,19 @@ export class TunnelManager {
     this.url = url;
 
     tunnel.on("disconnected", () => {
-      logWarn(t("tunnel.disconnected"));
+      logger.warn(t("tunnel.disconnected"));
     });
 
     tunnel.on("exit", (code: number | null) => {
-      log(t("tunnel.exited", { code: code ?? 0 }));
+      logger.info(t("tunnel.exited", { code: code ?? 0 }));
       this.tunnel = null;
       this.url = null;
 
       if (!this.stopped && this.port) {
-        log(t("tunnel.autoRestart"));
+        logger.info(t("tunnel.autoRestart"));
         this.connectWithRetry()
-          .then((newUrl) => log(t("tunnel.started", { url: newUrl })))
-          .catch(() => logWarn(t("tunnel.failed")));
+          .then((newUrl) => logger.info(t("tunnel.started", { url: newUrl })))
+          .catch(() => logger.warn(t("tunnel.failed")));
       }
     });
 

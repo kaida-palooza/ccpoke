@@ -15,7 +15,7 @@ import { getTranslations, t } from "../../i18n/index.js";
 import type { SessionMap, TmuxSession } from "../../tmux/session-map.js";
 import type { SessionStateManager } from "../../tmux/session-state.js";
 import type { TmuxBridge } from "../../tmux/tmux-bridge.js";
-import { log, logDebug, logError, logWarn } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import { extractProseSnippet } from "../../utils/markdown.js";
 import { formatModelName } from "../../utils/stats-format.js";
 import { autoAcceptStartupPrompts, launchAgent } from "../agent-launcher.js";
@@ -116,7 +116,7 @@ export class TelegramChannel implements NotificationChannel {
     this.bot.startPolling();
     await this.registerCommands();
     await this.registerMenuButton();
-    log(t("bot.telegramStarted"));
+    logger.info(t("bot.telegramStarted"));
 
     if (this.chatId) {
       this.bot
@@ -151,7 +151,7 @@ export class TelegramChannel implements NotificationChannel {
 
   async sendNotification(data: NotificationData, responseUrl?: string): Promise<void> {
     if (!this.chatId) {
-      log(t("bot.noChatId"));
+      logger.info(t("bot.noChatId"));
       return;
     }
 
@@ -160,7 +160,7 @@ export class TelegramChannel implements NotificationChannel {
     try {
       await sendTelegramMessage(this.bot, this.chatId, text, responseUrl, data.sessionId);
     } catch (err: unknown) {
-      logError(t("bot.notificationFailed"), err);
+      logger.error({ err }, t("bot.notificationFailed"));
     }
   }
 
@@ -199,9 +199,9 @@ export class TelegramChannel implements NotificationChannel {
 
     try {
       await this.bot.setMyCommands(commands);
-      log(t("bot.commandsRegistered"));
+      logger.info(t("bot.commandsRegistered"));
     } catch (err: unknown) {
-      logError(t("bot.commandsRegisterFailed"), err);
+      logger.error({ err }, t("bot.commandsRegisterFailed"));
     }
   }
 
@@ -210,16 +210,16 @@ export class TelegramChannel implements NotificationChannel {
       await this.bot.setChatMenuButton({
         menu_button: JSON.stringify({ type: "commands" }),
       } as Record<string, unknown>);
-      log(t("bot.menuButtonRegistered"));
+      logger.info(t("bot.menuButtonRegistered"));
     } catch (err: unknown) {
-      logError(t("bot.menuButtonFailed"), err);
+      logger.error({ err }, t("bot.menuButtonFailed"));
     }
   }
 
   private registerHandlers(): void {
     this.bot.onText(/\/start(?:\s|$)/, (msg) => {
       if (!ConfigManager.isOwner(this.cfg, msg.from?.id ?? 0)) {
-        log(
+        logger.info(
           t("bot.unauthorizedUser", {
             userId: msg.from?.id ?? 0,
             username: msg.from?.username ?? "",
@@ -235,7 +235,7 @@ export class TelegramChannel implements NotificationChannel {
 
       this.chatId = msg.chat.id;
       ConfigManager.saveChatState({ chat_id: this.chatId });
-      log(t("bot.registeredChatId", { chatId: msg.chat.id }));
+      logger.info(t("bot.registeredChatId", { chatId: msg.chat.id }));
       this.bot.sendMessage(msg.chat.id, t("bot.ready"), { parse_mode: "MarkdownV2" });
     });
   }
@@ -243,11 +243,11 @@ export class TelegramChannel implements NotificationChannel {
   private registerChatHandlers(): void {
     this.bot.on("callback_query", async (query) => {
       try {
-        logDebug(
+        logger.debug(
           `[TG:callback] id=${query.id} from=${query.from.id} data=${query.data ?? "(none)"}`
         );
         if (!ConfigManager.isOwner(this.cfg, query.from.id)) {
-          logDebug(`[TG:callback] dropped: unauthorized userId=${query.from.id}`);
+          logger.debug(`[TG:callback] dropped: unauthorized userId=${query.from.id}`);
           return;
         }
 
@@ -263,7 +263,7 @@ export class TelegramChannel implements NotificationChannel {
 
         if (query.data?.startsWith("elicit:")) {
           const sessionId = query.data.slice(7);
-          logDebug(`[Elicit:callback] sessionId=${sessionId}`);
+          logger.debug(`[Elicit:callback] sessionId=${sessionId}`);
           await this.handleElicitReplyButton(query, sessionId);
           return;
         }
@@ -318,7 +318,7 @@ export class TelegramChannel implements NotificationChannel {
         if (!query.data?.startsWith("chat:")) return;
 
         const sessionId = query.data.slice(5);
-        logDebug(`[Chat:callback] sessionId=${sessionId}`);
+        logger.debug(`[Chat:callback] sessionId=${sessionId}`);
 
         if (!this.sessionMap) {
           await this.bot.answerCallbackQuery(query.id, { text: t("chat.sessionExpired") });
@@ -356,12 +356,12 @@ export class TelegramChannel implements NotificationChannel {
           sessionId,
           session.project
         );
-        logDebug(
+        logger.debug(
           `[Chat:pending] msgId=${sent.message_id} → sessionId=${sessionId} project=${session.project} tmuxTarget=${session.tmuxTarget}`
         );
         await this.bot.answerCallbackQuery(query.id);
       } catch (err) {
-        logError("[callback_query] unhandled error", err);
+        logger.error({ err }, "[callback_query] unhandled error");
         try {
           await this.bot.answerCallbackQuery(query.id);
         } catch {
@@ -371,7 +371,7 @@ export class TelegramChannel implements NotificationChannel {
     });
 
     this.bot.on("message", async (msg) => {
-      logDebug(
+      logger.debug(
         `[TG:msg] msgId=${msg.message_id} from=${msg.from?.id ?? "?"} chatId=${msg.chat.id} hasReply=${!!msg.reply_to_message} hasText=${!!msg.text}`
       );
       if (!msg.reply_to_message) {
@@ -387,19 +387,19 @@ export class TelegramChannel implements NotificationChannel {
             })
             .catch(() => {});
         }
-        logDebug(`[TG:msg] dropped: no reply_to_message msgId=${msg.message_id}`);
+        logger.debug(`[TG:msg] dropped: no reply_to_message msgId=${msg.message_id}`);
         return;
       }
       if (!msg.text) {
-        logDebug(`[TG:msg] dropped: no text msgId=${msg.message_id}`);
+        logger.debug(`[TG:msg] dropped: no text msgId=${msg.message_id}`);
         return;
       }
       if (!ConfigManager.isOwner(this.cfg, msg.from?.id ?? 0)) {
-        logDebug(`[TG:msg] dropped: unauthorized userId=${msg.from?.id ?? "?"}`);
+        logger.debug(`[TG:msg] dropped: unauthorized userId=${msg.from?.id ?? "?"}`);
         return;
       }
 
-      logDebug(
+      logger.debug(
         `[Chat:msg] replyTo=${msg.reply_to_message.message_id} text="${msg.text.slice(0, 50)}"`
       );
 
@@ -416,7 +416,7 @@ export class TelegramChannel implements NotificationChannel {
 
       const pending = this.pendingReplyStore.get(msg.chat.id, msg.reply_to_message.message_id);
       if (!pending) {
-        logDebug(
+        logger.debug(
           `[TG:msg] dropped: no pending reply for chatId=${msg.chat.id} replyToMsgId=${msg.reply_to_message.message_id}`
         );
         return;
@@ -427,7 +427,7 @@ export class TelegramChannel implements NotificationChannel {
       if (this.promptHandler) {
         const injected = this.promptHandler.injectElicitationResponse(pending.sessionId, msg.text);
         if (injected) {
-          logDebug(`[Chat:result] elicitation injected → sessionId=${pending.sessionId}`);
+          logger.debug(`[Chat:result] elicitation injected → sessionId=${pending.sessionId}`);
           await this.bot.sendMessage(
             msg.chat.id,
             t("prompt.responded", { project: pending.project })
@@ -444,16 +444,16 @@ export class TelegramChannel implements NotificationChannel {
       const result = this.stateManager.injectMessage(pending.sessionId, msg.text);
 
       if ("sent" in result) {
-        logDebug(`[Chat:result] sent → sessionId=${pending.sessionId}`);
+        logger.debug(`[Chat:result] sent → sessionId=${pending.sessionId}`);
         await this.bot.sendMessage(msg.chat.id, t("chat.sent", { project: pending.project }));
       } else if ("busy" in result) {
-        logDebug(`[Chat:result] busy → sessionId=${pending.sessionId}`);
+        logger.debug(`[Chat:result] busy → sessionId=${pending.sessionId}`);
         await this.bot.sendMessage(msg.chat.id, t("chat.busy"));
       } else if ("sessionNotFound" in result) {
-        logDebug(`[Chat:result] sessionNotFound → sessionId=${pending.sessionId}`);
+        logger.debug(`[Chat:result] sessionNotFound → sessionId=${pending.sessionId}`);
         await this.bot.sendMessage(msg.chat.id, t("chat.sessionNotFound"));
       } else if ("tmuxDead" in result) {
-        logDebug(`[Chat:result] tmuxDead → sessionId=${pending.sessionId}`);
+        logger.debug(`[Chat:result] tmuxDead → sessionId=${pending.sessionId}`);
         await this.bot.sendMessage(msg.chat.id, t("chat.tmuxDead"));
       }
     });
@@ -490,7 +490,7 @@ export class TelegramChannel implements NotificationChannel {
     );
 
     this.pendingReplyStore.set(query.message.chat.id, sent.message_id, sessionId, session.project);
-    logDebug(
+    logger.debug(
       `[Elicit:pending] msgId=${sent.message_id} → sessionId=${sessionId} project=${session.project}`
     );
     await this.bot.answerCallbackQuery(query.id);
@@ -512,15 +512,15 @@ export class TelegramChannel implements NotificationChannel {
       const beforeCount = this.sessionMap.getAllActive().length;
       if (this.tmuxBridge) {
         const result = this.sessionMap.refreshFromTmux(this.tmuxBridge);
-        logDebug(
+        logger.debug(
           `[/sessions] refresh: before=${beforeCount} after=${result.total} discovered=${result.discovered.length} removed=${result.removed.length}`
         );
       }
 
       const sessions = this.sessionMap.getAllActive();
-      logDebug(`[/sessions] count=${sessions.length}`);
+      logger.debug(`[/sessions] count=${sessions.length}`);
       for (const s of sessions) {
-        logDebug(
+        logger.debug(
           `[/sessions:dump] id=${s.sessionId} target=${s.tmuxTarget} project=${s.project} cwd=${s.cwd}`
         );
       }
@@ -530,7 +530,7 @@ export class TelegramChannel implements NotificationChannel {
       if (replyMarkup) opts.reply_markup = replyMarkup;
 
       this.bot.sendMessage(msg.chat.id, text, opts).catch((err) => {
-        logError("[/sessions] MarkdownV2 sendMessage failed, retrying plain text", err);
+        logger.error({ err }, "[/sessions] MarkdownV2 sendMessage failed, retrying plain text");
         const plain = sessions.map((s) => `${s.project} (${s.state})`).join("\n");
         this.bot.sendMessage(msg.chat.id, plain || t("sessions.empty")).catch(() => {});
       });
@@ -636,13 +636,13 @@ export class TelegramChannel implements NotificationChannel {
         );
       }
 
-      log(`[Projects] started ${agentKey} in ${paneTarget} for ${project.name}`);
+      logger.info(`[Projects] started ${agentKey} in ${paneTarget} for ${project.name}`);
       await this.bot.sendMessage(
         query.message!.chat.id,
         t("projects.started", { project: project.name })
       );
     } catch (err) {
-      logError(`[Projects] failed to start panel for ${project.name}`, err);
+      logger.error({ err }, `[Projects] failed to start panel for ${project.name}`);
       await this.bot.sendMessage(
         query.message.chat.id,
         t("projects.startFailed", { project: project.name })
@@ -660,11 +660,11 @@ export class TelegramChannel implements NotificationChannel {
 
     const session = this.resolveSession(sessionId);
     if (!session) {
-      logDebug(`[Session:callback] NOT FOUND sessionId=${sessionId}`);
+      logger.debug(`[Session:callback] NOT FOUND sessionId=${sessionId}`);
       await this.bot.answerCallbackQuery(query.id, { text: t("chat.sessionExpired") });
       return;
     }
-    logDebug(
+    logger.debug(
       `[Session:callback] resolved id=${sessionId} → target=${session.tmuxTarget} project=${session.project}`
     );
 
@@ -762,7 +762,7 @@ export class TelegramChannel implements NotificationChannel {
 
     this.sessionMap.unregister(sessionId);
     this.sessionMap.save();
-    log(`[Sessions] closed session ${sessionId} (${session.project})`);
+    logger.info(`[Sessions] closed session ${sessionId} (${session.project})`);
 
     await this.bot.answerCallbackQuery(query.id);
     await this.bot.editMessageText(t("sessions.closed", { project: session.project }), {
@@ -787,10 +787,10 @@ export class TelegramChannel implements NotificationChannel {
       this.consecutivePollingErrors = 0;
       if (this.isDisconnected) {
         this.isDisconnected = false;
-        log(t("bot.connectionRestored"));
+        logger.info(t("bot.connectionRestored"));
       }
       if (this.processedUpdateIds.has(key)) {
-        logWarn(`[Polling] duplicate update_id=${uid} skipped`);
+        logger.warn(`[Polling] duplicate update_id=${uid} skipped`);
         return;
       }
       this.processedUpdateIds.set(key, Date.now());
@@ -814,7 +814,7 @@ export class TelegramChannel implements NotificationChannel {
       if (this.chatId && msg.chat.id !== this.chatId) return;
       const senderId = msg.text.slice("__ccpoke_takeover:".length);
       if (senderId === this.instanceId) return;
-      log(t("bot.instanceTakeover"));
+      logger.info(t("bot.instanceTakeover"));
       process.emit("SIGTERM", "SIGTERM");
     });
   }
@@ -831,13 +831,13 @@ export class TelegramChannel implements NotificationChannel {
 
       if (this.consecutivePollingErrors <= DISCONNECT_THRESHOLD) {
         const errMsg = err instanceof Error ? err.message : String(err ?? "unknown");
-        logDebug(`[Polling] error #${this.consecutivePollingErrors}: ${errMsg}`);
+        logger.debug(`[Polling] error #${this.consecutivePollingErrors}: ${errMsg}`);
       }
 
       if (!this.isDisconnected && this.consecutivePollingErrors >= DISCONNECT_THRESHOLD) {
         this.isDisconnected = true;
         if (Date.now() - this.startedAt >= STARTUP_GRACE_MS) {
-          logWarn(t("bot.connectionLost"));
+          logger.warn(t("bot.connectionLost"));
         }
       }
     });
@@ -847,7 +847,7 @@ export class TelegramChannel implements NotificationChannel {
       if (Date.now() - this.startedAt < STARTUP_GRACE_MS) return;
       const staleMs = Date.now() - this.lastPollingActivity;
       if (staleMs < STALE_THRESHOLD_MS) return;
-      logWarn(t("bot.pollingRestart"));
+      logger.warn(t("bot.pollingRestart"));
       this.isDisconnected = true;
       this.lastPollingActivity = Date.now();
       this.reconnectTimer = setTimeout(async () => {
@@ -863,7 +863,7 @@ export class TelegramChannel implements NotificationChannel {
         this.bot.startPolling();
         this.lastPollingActivity = Date.now();
         this.reconnectTimer = null;
-        log(t("bot.pollingRestarted"));
+        logger.info(t("bot.pollingRestarted"));
       }, RESTART_DELAY_MS);
     }, HEARTBEAT_INTERVAL_MS);
   }

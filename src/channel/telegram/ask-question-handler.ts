@@ -3,7 +3,7 @@ import type TelegramBot from "node-telegram-bot-api";
 import type { AskUserQuestionEvent, AskUserQuestionItem } from "../../agent/agent-handler.js";
 import { t } from "../../i18n/index.js";
 import type { TmuxBridge } from "../../tmux/tmux-bridge.js";
-import { log, logDebug, logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import {
   buildMultiSelectKeyboard,
   buildSingleSelectKeyboard,
@@ -48,7 +48,7 @@ export class AskQuestionHandler {
     const chat = this.chatId();
     if (!chat || !event.tmuxTarget || event.questions.length === 0) return;
 
-    log(
+    logger.info(
       `[AskQ] sessionId=${event.sessionId} tmuxTarget=${event.tmuxTarget} questions=${event.questions.length}`
     );
 
@@ -71,7 +71,7 @@ export class AskQuestionHandler {
       createdAt: Date.now(),
     };
 
-    log(
+    logger.info(
       `[AskQ:store] pendingId=${pendingId} sessionId=${event.sessionId} tmuxTarget=${event.tmuxTarget} pending.keys=[${[...this.pending.keys()].join(",")}]`
     );
 
@@ -83,7 +83,7 @@ export class AskQuestionHandler {
     if (!query.data || !query.message) return;
 
     if (this.processedCallbacks.has(query.id)) {
-      logDebug(`[AskQ:callback] DEDUP skip id=${query.id}`);
+      logger.debug(`[AskQ:callback] DEDUP skip id=${query.id}`);
       try {
         await this.bot.answerCallbackQuery(query.id);
       } catch {
@@ -97,14 +97,14 @@ export class AskQuestionHandler {
       this.processedCallbacks.delete(first);
     }
 
-    logDebug(`[AskQ:callback] data=${query.data}`);
+    logger.debug(`[AskQ:callback] data=${query.data}`);
 
     const msgId = query.message.message_id;
     const prev = this.callbackLocks.get(msgId) ?? Promise.resolve();
     const current = prev
       .then(() => this.processCallback(query))
       .catch((err) => {
-        logError("[AskQ:callback] error", err);
+        logger.error({ err }, "[AskQ:callback] error");
       });
     this.callbackLocks.set(msgId, current);
     await current;
@@ -172,11 +172,11 @@ export class AskQuestionHandler {
 
     const pq = this.findPendingByNumericId(pendingId);
     if (!pq) {
-      logDebug(`[AskQ:single] pendingId=${pendingId} NOT FOUND`);
+      logger.debug(`[AskQ:single] pendingId=${pendingId} NOT FOUND`);
       await this.bot.answerCallbackQuery(query.id, { text: t("askQuestion.sessionExpired") });
       return;
     }
-    logDebug(
+    logger.debug(
       `[AskQ:single] pendingId=${pendingId} → sessionId=${pq.sessionId} tmuxTarget=${pq.tmuxTarget} opt=${optPart}`
     );
 
@@ -211,11 +211,11 @@ export class AskQuestionHandler {
 
     const pq = this.findPendingByNumericId(pendingId);
     if (!pq) {
-      logDebug(`[AskQ:multi] pendingId=${pendingId} NOT FOUND`);
+      logger.debug(`[AskQ:multi] pendingId=${pendingId} NOT FOUND`);
       await this.bot.answerCallbackQuery(query.id, { text: t("askQuestion.sessionExpired") });
       return;
     }
-    logDebug(
+    logger.debug(
       `[AskQ:multi] pendingId=${pendingId} → sessionId=${pq.sessionId} tmuxTarget=${pq.tmuxTarget} opt=${optPart}`
     );
 
@@ -286,13 +286,13 @@ export class AskQuestionHandler {
     const answer = pq.answers.get(qIdx);
     if (!q || !answer) return;
 
-    logDebug(
+    logger.debug(
       `[AskQ:inject] tmuxTarget=${pq.tmuxTarget} sessionId=${pq.sessionId} qIdx=${qIdx} indices=${answer.indices}`
     );
 
     try {
       const ready = await this.injector.waitForTui(pq.tmuxTarget, 5000);
-      logDebug(`[AskQ:inject] TUI ready=${ready} for target=${pq.tmuxTarget}`);
+      logger.debug(`[AskQ:inject] TUI ready=${ready} for target=${pq.tmuxTarget}`);
       if (!ready) throw new Error("TUI not ready");
 
       if (q.multiSelect) {
@@ -301,7 +301,7 @@ export class AskQuestionHandler {
         await this.injector.injectSingleSelect(pq.tmuxTarget, q, answer, pq.agent);
       }
     } catch (err) {
-      logError(t("askQuestion.injectionFailed"), err);
+      logger.error({ err }, t("askQuestion.injectionFailed"));
       const chat = this.chatId();
       if (chat) {
         await this.bot.sendMessage(chat, t("askQuestion.injectionFailed")).catch(() => {});
@@ -312,7 +312,7 @@ export class AskQuestionHandler {
   private async advanceToNext(chatId: number, pq: PendingQuestion): Promise<void> {
     pq.currentIndex++;
     if (pq.currentIndex >= pq.questions.length) {
-      logDebug(
+      logger.debug(
         `[AskQ:submit] all ${pq.questions.length} questions answered, submitting via Enter on target=${pq.tmuxTarget}`
       );
       await new Promise((resolve) => setTimeout(resolve, 500));

@@ -13,7 +13,7 @@ import type { NotificationEvent } from "../../agent/agent-handler.js";
 import type { AgentRegistry } from "../../agent/agent-registry.js";
 import { SessionState, type SessionMap } from "../../tmux/session-map.js";
 import type { TmuxBridge } from "../../tmux/tmux-bridge.js";
-import { log, logDebug } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 
 interface PendingPrompt {
   sessionId: string;
@@ -52,7 +52,7 @@ export class DiscordPromptHandler {
     if (!session) return false;
     if (!this.pending.has(sessionId)) return false;
 
-    log(
+    logger.info(
       `[Discord:Prompt:inject] sessionId=${sessionId} tmuxTarget=${session.tmuxTarget} text="${text.slice(0, 50)}"`
     );
 
@@ -127,7 +127,9 @@ export class DiscordPromptHandler {
     if (sent) {
       this.setPending(event.sessionId);
       this.onElicitationSent?.(sent.id, event.sessionId, project ?? "");
-      logDebug(`[Discord:Prompt] elicitation sent msgId=${sent.id} sessionId=${event.sessionId}`);
+      logger.debug(
+        `[Discord:Prompt] elicitation sent msgId=${sent.id} sessionId=${event.sessionId}`
+      );
     }
   }
 

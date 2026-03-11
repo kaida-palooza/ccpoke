@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 
 import { collectGitChanges } from "../../utils/git-collector.js";
-import { logDebug } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import { paths } from "../../utils/paths.js";
 import {
   AGENT_DISPLAY_NAMES,
@@ -44,7 +44,7 @@ export class OpencodeProvider implements AgentProvider {
     }
 
     const event = parseOpencodeEvent(raw);
-    logDebug(`[OpenCode:raw] sessionId=${event.sessionId} cwd=${event.cwd}`);
+    logger.debug(`[OpenCode:raw] sessionId=${event.sessionId} cwd=${event.cwd}`);
 
     const gitChanges = event.cwd ? collectGitChanges(event.cwd) : [];
     const obj = raw as Record<string, unknown>;

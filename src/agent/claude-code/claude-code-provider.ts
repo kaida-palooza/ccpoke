@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 
 import { t } from "../../i18n/index.js";
 import { collectGitChanges } from "../../utils/git-collector.js";
-import { logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import { paths } from "../../utils/paths.js";
 import {
   AGENT_DISPLAY_NAMES,
@@ -54,7 +54,7 @@ export class ClaudeCodeProvider implements AgentProvider {
     try {
       summary = parseTranscript(raw.transcript_path);
     } catch (err: unknown) {
-      logError(t("hook.transcriptFailed"), err);
+      logger.error({ err }, t("hook.transcriptFailed"));
     }
 
     const gitChanges = collectGitChanges(raw.cwd);

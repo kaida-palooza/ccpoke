@@ -1,7 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 
 import { t } from "../../i18n/index.js";
-import { logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 
 const TELEGRAM_MAX_MESSAGE_LENGTH = 4096;
 const PAGINATION_FOOTER_RESERVE = 30;
@@ -69,10 +69,13 @@ async function sendWithRetry(
           error?.response?.parameters?.retry_after ?? RETRY_DELAYS_MS[attempt]! / 1000;
         await new Promise((r) => setTimeout(r, retryAfter * 1000));
       } else if (!isLastAttempt) {
-        logError(attempt === 0 ? t("bot.sendFailed") : t("bot.sendFallbackFailed"), error);
+        logger.error(
+          { err: error },
+          attempt === 0 ? t("bot.sendFailed") : t("bot.sendFallbackFailed")
+        );
         await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]!));
       } else {
-        logError(t("bot.sendFallbackFailed"), error);
+        logger.error({ err: error }, t("bot.sendFallbackFailed"));
       }
     }
   }

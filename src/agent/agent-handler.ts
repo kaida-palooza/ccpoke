@@ -1,7 +1,7 @@
 import type { NotificationChannel, NotificationData } from "../channel/types.js";
 import { t } from "../i18n/index.js";
 import { MINI_APP_BASE_URL } from "../utils/constants.js";
-import { log, logDebug, logError } from "../utils/log.js";
+import { logger } from "../utils/log.js";
 import { responseStore } from "../utils/response-store.js";
 import type { TunnelManager } from "../utils/tunnel.js";
 import type { AgentRegistry } from "./agent-registry.js";
@@ -63,7 +63,7 @@ export class AgentHandler {
   async handleStopEvent(agentName: string, rawEvent: unknown): Promise<void> {
     const provider = this.registry.resolve(agentName);
     if (!provider) {
-      log(t("agent.unknownAgent", { agent: agentName }));
+      logger.info(t("agent.unknownAgent", { agent: agentName }));
       return;
     }
 
@@ -72,7 +72,7 @@ export class AgentHandler {
     }
 
     const result = provider.parseEvent(rawEvent);
-    logDebug(
+    logger.debug(
       `[Stop:raw] agent=${agentName} agentSessionId=${result.agentSessionId ?? "NONE"} project=${result.projectName} tmuxTarget=${result.tmuxTarget ?? "NONE"} cwd=${result.cwd ?? "NONE"}`
     );
 
@@ -84,7 +84,7 @@ export class AgentHandler {
         result.cwd,
         result.tmuxTarget
       );
-      logDebug(`[Stop:resolved] chatSessionId=${chatSessionId ?? "NONE"}`);
+      logger.debug(`[Stop:resolved] chatSessionId=${chatSessionId ?? "NONE"}`);
     }
 
     if (!chatSessionId && result.tmuxTarget && this.chatResolver) {
@@ -94,7 +94,9 @@ export class AgentHandler {
         result.cwd,
         result.tmuxTarget
       );
-      logDebug(`[Stop:fallback] registered ${chatSessionId} from tmuxTarget=${result.tmuxTarget}`);
+      logger.debug(
+        `[Stop:fallback] registered ${chatSessionId} from tmuxTarget=${result.tmuxTarget}`
+      );
     }
 
     const data: NotificationData = {
@@ -110,7 +112,7 @@ export class AgentHandler {
 
     const responseUrl = this.buildResponseUrl(data);
     this.channel.sendNotification(data, responseUrl).catch((err: unknown) => {
-      logError(t("hook.notificationFailed"), err);
+      logger.error({ err }, t("hook.notificationFailed"));
     });
   }
 
@@ -128,7 +130,7 @@ export class AgentHandler {
     const event = this.parseAskUserQuestionEvent(rawEvent);
     if (!event) return;
 
-    logDebug(
+    logger.debug(
       `[AskQ:raw] agentSessionId=${event.sessionId} tmuxTarget=${event.tmuxTarget ?? "NONE"} cwd=${event.cwd ?? "NONE"} questions=${event.questions.length}`
     );
 
@@ -140,13 +142,13 @@ export class AgentHandler {
         event.cwd,
         event.tmuxTarget
       );
-      logDebug(
+      logger.debug(
         `[AskQ:resolved] agentSessionId=${event.sessionId} → resolvedSessionId=${sessionId ?? "NONE"}`
       );
     }
 
     const finalSessionId = sessionId ?? event.sessionId;
-    logDebug(
+    logger.debug(
       `[AskQ:forward] finalSessionId=${finalSessionId} tmuxTarget=${event.tmuxTarget ?? "NONE"}`
     );
     this.onAskUserQuestion?.({ ...event, sessionId: finalSessionId });
@@ -156,7 +158,7 @@ export class AgentHandler {
     const event = this.parsePermissionRequestEvent(rawEvent);
     if (!event) return;
 
-    logDebug(
+    logger.debug(
       `[PermReq:raw] agentSessionId=${event.sessionId} tmuxTarget=${event.tmuxTarget ?? "NONE"} tool=${event.toolName}`
     );
 
@@ -168,11 +170,11 @@ export class AgentHandler {
         event.cwd,
         event.tmuxTarget
       );
-      logDebug(`[PermReq:resolved] ${event.sessionId} → ${sessionId ?? "NONE"}`);
+      logger.debug(`[PermReq:resolved] ${event.sessionId} → ${sessionId ?? "NONE"}`);
     }
 
     const finalSessionId = sessionId ?? event.sessionId;
-    logDebug(
+    logger.debug(
       `[PermReq:forward] finalSessionId=${finalSessionId} tmuxTarget=${event.tmuxTarget ?? "NONE"}`
     );
     this.onPermissionRequest?.({ ...event, sessionId: finalSessionId });
@@ -182,7 +184,7 @@ export class AgentHandler {
     const event = this.parseNotificationEvent(rawEvent);
     if (!event) return;
 
-    logDebug(
+    logger.debug(
       `[Notif:raw] agentSessionId=${event.sessionId} tmuxTarget=${event.tmuxTarget ?? "NONE"} type=${event.notificationType}`
     );
 
@@ -194,14 +196,14 @@ export class AgentHandler {
         event.cwd,
         event.tmuxTarget
       );
-      logDebug(`[Notif:resolved] ${event.sessionId} → ${sessionId ?? "NONE"}`);
+      logger.debug(`[Notif:resolved] ${event.sessionId} → ${sessionId ?? "NONE"}`);
     }
 
     if (!sessionId) {
       sessionId = event.sessionId;
     }
 
-    logDebug(
+    logger.debug(
       `[Notif:forward] finalSessionId=${sessionId} tmuxTarget=${event.tmuxTarget ?? "NONE"}`
     );
     this.onNotification?.({ ...event, sessionId });

@@ -3,7 +3,7 @@ import { execSync } from "node:child_process";
 import { AgentName } from "../agent/types.js";
 import { getTmuxBinary, type TmuxBridge } from "../tmux/tmux-bridge.js";
 import { isWindows } from "../utils/constants.js";
-import { logDebug } from "../utils/log.js";
+import { logger } from "../utils/log.js";
 import { escapeShellArg } from "../utils/shell.js";
 
 const AGENT_START_COMMANDS: Record<string, string> = {
@@ -60,7 +60,7 @@ export function autoAcceptStartupPrompts(
 
       if (!trustHandled && content.includes("Trust")) {
         tmuxBridge.sendSpecialKey(paneTarget, "Enter");
-        logDebug(`[AgentLauncher] auto-trusted workspace at ${paneTarget} for ${agentKey}`);
+        logger.debug(`[AgentLauncher] auto-trusted workspace at ${paneTarget} for ${agentKey}`);
         trustHandled = true;
       }
     } catch {
@@ -95,7 +95,7 @@ function tryAcceptBypassPermissions(
     navigateToOption(tmuxBridge, paneTarget, offset);
   }
 
-  logDebug(`[AgentLauncher] auto-accepted bypass permissions at ${paneTarget} for ${agentKey}`);
+  logger.debug(`[AgentLauncher] auto-accepted bypass permissions at ${paneTarget} for ${agentKey}`);
   return true;
 }
 

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 
 import { collectGitChanges } from "../../utils/git-collector.js";
-import { logDebug } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import { paths } from "../../utils/paths.js";
 import {
   AGENT_DISPLAY_NAMES,
@@ -49,7 +49,7 @@ export class GeminiCliProvider implements AgentProvider {
     }
 
     const event = parseAfterAgentEvent(raw);
-    logDebug(`[GeminiCli:raw] sessionId=${event.sessionId} cwd=${event.cwd}`);
+    logger.debug(`[GeminiCli:raw] sessionId=${event.sessionId} cwd=${event.cwd}`);
 
     let usage = { model: "" };
     try {

@@ -1,5 +1,5 @@
 import type { ChatSessionResolver } from "../agent/chat-session-resolver.js";
-import { log, logDebug } from "../utils/log.js";
+import { logger } from "../utils/log.js";
 import type { SessionMap } from "./session-map.js";
 import type { SessionStateManager } from "./session-state.js";
 
@@ -19,14 +19,14 @@ export class TmuxSessionResolver implements ChatSessionResolver {
     cwd?: string,
     tmuxTarget?: string
   ): string | undefined {
-    logDebug(
+    logger.debug(
       `[Resolver] input: agentSessionId=${agentSessionId} project=${projectName} cwd=${cwd ?? "NONE"} tmuxTarget=${tmuxTarget ?? "NONE"}`
     );
 
     if (agentSessionId) {
       const cached = this.agentToTmux.get(agentSessionId);
       if (cached && this.sessionMap.getBySessionId(cached)) {
-        logDebug(`[Resolver] matched by cache: ${agentSessionId} → ${cached}`);
+        logger.debug(`[Resolver] matched by cache: ${agentSessionId} → ${cached}`);
         return cached;
       }
       this.agentToTmux.delete(agentSessionId);
@@ -36,17 +36,17 @@ export class TmuxSessionResolver implements ChatSessionResolver {
       const exactMatch = this.findByTmuxTarget(tmuxTarget);
       if (exactMatch) {
         if (agentSessionId) this.cacheAgent(agentSessionId, exactMatch);
-        logDebug(`[Resolver] matched by tmuxTarget: ${tmuxTarget} → ${exactMatch}`);
+        logger.debug(`[Resolver] matched by tmuxTarget: ${tmuxTarget} → ${exactMatch}`);
         return exactMatch;
       }
-      logDebug(`[Resolver] NO match for tmuxTarget=${tmuxTarget}`);
+      logger.debug(`[Resolver] NO match for tmuxTarget=${tmuxTarget}`);
     }
 
     const tmuxSessionId = this.findByProject(projectName, cwd);
     if (tmuxSessionId && agentSessionId) {
       this.cacheAgent(agentSessionId, tmuxSessionId);
     }
-    logDebug(`[Resolver] matched by project: ${projectName} → ${tmuxSessionId ?? "NONE"}`);
+    logger.debug(`[Resolver] matched by project: ${projectName} → ${tmuxSessionId ?? "NONE"}`);
     return tmuxSessionId;
   }
 
@@ -78,7 +78,7 @@ export class TmuxSessionResolver implements ChatSessionResolver {
   private findByTmuxTarget(tmuxTarget: string): string | undefined {
     for (const session of this.sessionMap.getAllActive()) {
       if (session.tmuxTarget === tmuxTarget) {
-        log(`session linked by tmux_target: ${session.sessionId} (${tmuxTarget})`);
+        logger.info(`session linked by tmux_target: ${session.sessionId} (${tmuxTarget})`);
         return session.sessionId;
       }
     }
@@ -99,7 +99,7 @@ export class TmuxSessionResolver implements ChatSessionResolver {
 
     const existing =
       (cwd && matches.length > 1 ? matches.find((s) => s.cwd === cwd) : undefined) ?? matches[0]!;
-    log(`session linked: ${existing.sessionId} (${projectName})`);
+    logger.info(`session linked: ${existing.sessionId} (${projectName})`);
     return existing.sessionId;
   }
 }

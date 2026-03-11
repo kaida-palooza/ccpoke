@@ -1,6 +1,6 @@
 import type { KnownBlock, WebClient } from "@slack/web-api";
 
-import { logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 
 const MAX_BLOCKS_PER_MESSAGE = 50;
 
@@ -30,7 +30,7 @@ export class SlackSender {
         });
       }
     } catch (err) {
-      logError("[Slack] sendMessage failed", err);
+      logger.error({ err }, "[Slack] sendMessage failed");
     }
   }
 }

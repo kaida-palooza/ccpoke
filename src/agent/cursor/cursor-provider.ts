@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { t } from "../../i18n/index.js";
 import { collectGitChanges } from "../../utils/git-collector.js";
-import { logDebug, logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import {
   AGENT_DISPLAY_NAMES,
   AgentName,
@@ -52,10 +52,10 @@ export class CursorProvider implements AgentProvider {
     }
 
     const event = parseStopEvent(raw);
-    logDebug(`[Cursor:raw] ${JSON.stringify(raw)}`);
+    logger.debug(`[Cursor:raw] ${JSON.stringify(raw)}`);
 
     const composerData = readComposerData(event.conversationId);
-    logDebug(`[Cursor:composer] model=${composerData.model || "NONE"}`);
+    logger.debug(`[Cursor:composer] model=${composerData.model || "NONE"}`);
 
     let summary = {
       lastAssistantMessage: "",
@@ -65,14 +65,14 @@ export class CursorProvider implements AgentProvider {
     try {
       if (event.transcriptPath) {
         summary = parseTranscript(event.transcriptPath);
-        logDebug(
+        logger.debug(
           `[Cursor:transcript] lastMsg=${summary.lastAssistantMessage.slice(0, 80) || "EMPTY"}`
         );
       } else {
-        logDebug(`[Cursor:transcript] SKIPPED — no transcriptPath`);
+        logger.debug(`[Cursor:transcript] SKIPPED — no transcriptPath`);
       }
     } catch (err: unknown) {
-      logError(t("hook.transcriptFailed"), err);
+      logger.error({ err }, t("hook.transcriptFailed"));
     }
 
     const gitChanges = collectGitChanges(event.cwd);

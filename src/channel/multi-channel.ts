@@ -3,7 +3,7 @@ import type {
   NotificationEvent,
   PermissionRequestEvent,
 } from "../agent/agent-handler.js";
-import { logError } from "../utils/log.js";
+import { logger } from "../utils/log.js";
 import type { NotificationChannel, NotificationData } from "./types.js";
 
 export class MultiChannel implements NotificationChannel {
@@ -12,7 +12,8 @@ export class MultiChannel implements NotificationChannel {
   async initialize(): Promise<void> {
     const results = await Promise.allSettled(this.channels.map((c) => c.initialize()));
     for (const r of results) {
-      if (r.status === "rejected") logError("[MultiChannel] channel init failed", r.reason);
+      if (r.status === "rejected")
+        logger.error({ err: r.reason }, "[MultiChannel] channel init failed");
     }
   }
 

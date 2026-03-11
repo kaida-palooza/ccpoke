@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { basename } from "node:path";
 
 import { AgentName } from "../agent/types.js";
-import { logDebug } from "../utils/log.js";
+import { logger } from "../utils/log.js";
 import { paths } from "../utils/paths.js";
 import type { TmuxBridge } from "./tmux-bridge.js";
 import { detectModelFromCwd, scanAgentPanes } from "./tmux-scanner.js";
@@ -67,7 +67,7 @@ export class SessionMap {
     if (tmuxTarget) {
       for (const [existingId, existing] of this.sessions) {
         if (existing.tmuxTarget === tmuxTarget && existingId !== sessionId) {
-          logDebug(
+          logger.debug(
             `[Register:dedup] removing ${existingId} (tmuxTarget=${tmuxTarget}) in favor of ${sessionId}`
           );
           this.addTombstone(existingId, existing.tmuxTarget);
@@ -189,7 +189,7 @@ export class SessionMap {
 
     for (const [id, session] of this.sessions) {
       if (!allPaneTargets.has(session.tmuxTarget)) {
-        logDebug(
+        logger.debug(
           `[Scan:remove] id=${id} tmuxTarget=${session.tmuxTarget} project=${session.project}`
         );
         removed.push(session);
@@ -205,7 +205,7 @@ export class SessionMap {
         // Update project/cwd if pane changed directory
         const currentProject = basename(pane.cwd) || "unknown";
         if (existing.project !== currentProject || existing.cwd !== pane.cwd) {
-          logDebug(
+          logger.debug(
             `[Scan:update] id=${existing.sessionId} project=${existing.project}→${currentProject} cwd=${existing.cwd}→${pane.cwd}`
           );
           existing.project = currentProject;
@@ -216,7 +216,9 @@ export class SessionMap {
 
       const syntheticId = `tmux-${pane.target.replace(/[:.]/g, "-")}`;
       const project = basename(pane.cwd) || "unknown";
-      logDebug(`[Scan:new] syntheticId=${syntheticId} target=${pane.target} project=${project}`);
+      logger.debug(
+        `[Scan:new] syntheticId=${syntheticId} target=${pane.target} project=${project}`
+      );
       const agentName =
         "agentName" in pane ? (pane as { agentName: AgentName }).agentName : AgentName.ClaudeCode;
       const state = tmuxBridge.isAgentIdle(pane.target, tree)
@@ -233,7 +235,7 @@ export class SessionMap {
     for (const session of this.sessions.values()) {
       if (session.state !== SessionState.Busy) continue;
       if (tmuxBridge.isAgentIdle(session.tmuxTarget, tree)) {
-        logDebug(`[Scan:reconcile] ${session.sessionId} Busy→Idle (process idle)`);
+        logger.debug(`[Scan:reconcile] ${session.sessionId} Busy→Idle (process idle)`);
         session.state = SessionState.Idle;
         session.lastActivity = new Date();
         reconciled++;

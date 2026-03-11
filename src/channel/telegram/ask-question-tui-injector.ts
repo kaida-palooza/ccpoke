@@ -1,7 +1,7 @@
 import type { AskUserQuestionItem } from "../../agent/agent-handler.js";
 import { AgentName } from "../../agent/types.js";
 import type { TmuxBridge } from "../../tmux/tmux-bridge.js";
-import { logDebug } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 
 export interface InjectionAnswer {
   indices: number[];
@@ -21,7 +21,7 @@ export class AskQuestionTuiInjector {
   ): Promise<void> {
     if (answer.indices.length > 0) {
       const targetIdx = answer.indices[0]!;
-      logDebug(`[Inject:single] target=${target} idx=${targetIdx} agent=${agent ?? "default"}`);
+      logger.debug(`[Inject:single] target=${target} idx=${targetIdx} agent=${agent ?? "default"}`);
       for (let i = 0; i < targetIdx; i++) {
         await this.delayedKey(target, "Down");
       }
@@ -40,7 +40,7 @@ export class AskQuestionTuiInjector {
     const sorted = [...answer.indices].sort((a, b) => a - b);
     let currentPos = 0;
 
-    logDebug(
+    logger.debug(
       `[Inject:multi] target=${target} agent=${agent ?? "default"} toggleKey=${toggleKey} indices=[${sorted.join(",")}]`
     );
 

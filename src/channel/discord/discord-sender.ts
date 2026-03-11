@@ -1,6 +1,6 @@
 import type { DMChannel, EmbedBuilder, TextChannel } from "discord.js";
 
-import { logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 
 const DISCORD_MAX_CONTENT_LENGTH = 2000;
 
@@ -19,7 +19,7 @@ export async function sendDiscordDM(
         embeds: isLast && embeds ? embeds : undefined,
       });
     } catch (err) {
-      logError("[Discord] send failed", err);
+      logger.error({ err }, "[Discord] send failed");
       throw err;
     }
   }

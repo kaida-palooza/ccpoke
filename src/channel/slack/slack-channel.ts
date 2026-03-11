@@ -9,7 +9,7 @@ import type {
 } from "../../agent/agent-handler.js";
 import type { Config } from "../../config-manager.js";
 import { t } from "../../i18n/index.js";
-import { log, logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import type { ChannelDeps, NotificationChannel, NotificationData } from "../types.js";
 import { buildNotificationBlocks } from "./slack-block-builder.js";
 import { SlackSender } from "./slack-sender.js";
@@ -32,9 +32,9 @@ export class SlackChannel implements NotificationChannel {
 
     try {
       await this.client.auth.test();
-      log("[Slack] connected");
+      logger.info("[Slack] connected");
     } catch (err) {
-      logError("[Slack] auth.test failed", err);
+      logger.error({ err }, "[Slack] auth.test failed");
       throw err;
     }
 
@@ -48,7 +48,7 @@ export class SlackChannel implements NotificationChannel {
 
   async sendNotification(data: NotificationData, responseUrl?: string): Promise<void> {
     if (!this.sender) {
-      logError("[Slack] not initialized");
+      logger.error("[Slack] not initialized");
       return;
     }
 

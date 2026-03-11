@@ -11,7 +11,7 @@ import {
 
 import type { AskUserQuestionEvent, AskUserQuestionItem } from "../../agent/agent-handler.js";
 import type { TmuxBridge } from "../../tmux/tmux-bridge.js";
-import { log, logDebug, logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import { truncate } from "../summarize-tool.js";
 import {
   AskQuestionTuiInjector,
@@ -52,7 +52,7 @@ export class DiscordAskQuestionHandler {
     const channel = this.getChannel();
     if (!channel || !event.tmuxTarget || event.questions.length === 0) return;
 
-    log(
+    logger.info(
       `[Discord:AskQ] sessionId=${event.sessionId} tmuxTarget=${event.tmuxTarget} questions=${event.questions.length}`
     );
 
@@ -220,7 +220,7 @@ export class DiscordAskQuestionHandler {
     const answer = pq.answers.get(qIdx);
     if (!q || !answer) return;
 
-    logDebug(
+    logger.debug(
       `[Discord:AskQ:inject] tmuxTarget=${pq.tmuxTarget} qIdx=${qIdx} indices=${answer.indices}`
     );
 
@@ -234,14 +234,14 @@ export class DiscordAskQuestionHandler {
         await this.injector.injectSingleSelect(pq.tmuxTarget, q, answer);
       }
     } catch (err) {
-      logError("[Discord:AskQ] injection failed", err);
+      logger.error({ err }, "[Discord:AskQ] injection failed");
     }
   }
 
   private async advanceToNext(pq: PendingQuestion): Promise<void> {
     pq.currentIndex++;
     if (pq.currentIndex >= pq.questions.length) {
-      logDebug(`[Discord:AskQ:submit] all ${pq.questions.length} questions answered`);
+      logger.debug(`[Discord:AskQ:submit] all ${pq.questions.length} questions answered`);
       await new Promise((resolve) => setTimeout(resolve, 500));
       try {
         const ready = await this.injector.waitForTui(pq.tmuxTarget, 5000);

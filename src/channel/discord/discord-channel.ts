@@ -27,7 +27,7 @@ import { t } from "../../i18n/index.js";
 import type { SessionMap } from "../../tmux/session-map.js";
 import type { SessionStateManager } from "../../tmux/session-state.js";
 import type { TmuxBridge } from "../../tmux/tmux-bridge.js";
-import { log, logDebug, logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import type { ChannelDeps, NotificationChannel, NotificationData } from "../types.js";
 import { DiscordAskQuestionHandler } from "./discord-ask-question-handler.js";
 import { formatNotificationEmbed } from "./discord-markdown.js";
@@ -85,7 +85,7 @@ export class DiscordChannel implements NotificationChannel {
       );
       this.client.once(Events.ClientReady, async () => {
         clearTimeout(timer);
-        log(`[Discord] bot ready as ${this.client.user?.tag}`);
+        logger.info(`[Discord] bot ready as ${this.client.user?.tag}`);
         await this.openDMChannel();
         await this.registerSlashCommands();
         this.registerInteractionHandler();
@@ -158,7 +158,7 @@ export class DiscordChannel implements NotificationChannel {
 
   async sendNotification(data: NotificationData, responseUrl?: string): Promise<void> {
     if (!this.dmChannel) {
-      log("[Discord] no DM channel configured");
+      logger.info("[Discord] no DM channel configured");
       return;
     }
 
@@ -172,7 +172,7 @@ export class DiscordChannel implements NotificationChannel {
 
       await this.dmChannel.send({ embeds: [embed], components });
     } catch (err) {
-      logError("[Discord] notification send failed", err);
+      logger.error({ err }, "[Discord] notification send failed");
     }
   }
 
@@ -215,9 +215,9 @@ export class DiscordChannel implements NotificationChannel {
         ConfigManager.saveChatState({ ...saved, discord_dm_id: this.dmChannel.id });
       }
 
-      logDebug(`[Discord] DM channel opened: ${this.dmChannel.id}`);
+      logger.debug(`[Discord] DM channel opened: ${this.dmChannel.id}`);
     } catch (err) {
-      logError("[Discord] failed to open DM channel", err);
+      logger.error({ err }, "[Discord] failed to open DM channel");
     }
   }
 
@@ -232,9 +232,9 @@ export class DiscordChannel implements NotificationChannel {
     try {
       const rest = new REST().setToken(this.cfg.discord_bot_token);
       await rest.put(Routes.applicationCommands(this.client.user.id), { body: commands });
-      log("[Discord] slash commands registered");
+      logger.info("[Discord] slash commands registered");
     } catch (err) {
-      logError("[Discord] slash command registration failed", err);
+      logger.error({ err }, "[Discord] slash command registration failed");
     }
   }
 
@@ -282,7 +282,7 @@ export class DiscordChannel implements NotificationChannel {
           await this.sessionCommandHandler?.handleAgentStartButton(btn);
         }
       } catch (err) {
-        logError("[Discord] interaction error", err);
+        logger.error({ err }, "[Discord] interaction error");
       }
     });
   }

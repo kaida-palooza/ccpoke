@@ -16,7 +16,7 @@ import { ConfigManager } from "../../config-manager.js";
 import type { SessionMap } from "../../tmux/session-map.js";
 import type { SessionStateManager } from "../../tmux/session-state.js";
 import type { TmuxBridge } from "../../tmux/tmux-bridge.js";
-import { log, logError } from "../../utils/log.js";
+import { logger } from "../../utils/log.js";
 import { autoAcceptStartupPrompts, launchAgent } from "./discord-agent-launcher.js";
 
 export class DiscordSessionCommandHandler {
@@ -165,7 +165,7 @@ export class DiscordSessionCommandHandler {
 
     this.sessionMap.unregister(sessionId);
     this.sessionMap.save();
-    log(`[Discord] closed session ${sessionId} (${session.project})`);
+    logger.info(`[Discord] closed session ${sessionId} (${session.project})`);
     await interaction.reply({ content: `Closed session for **${session.project}**` });
   }
 
@@ -252,10 +252,10 @@ export class DiscordSessionCommandHandler {
         );
       }
 
-      log(`[Discord] started ${agentKey} in ${paneTarget} for ${project.name}`);
+      logger.info(`[Discord] started ${agentKey} in ${paneTarget} for ${project.name}`);
       await interaction.reply({ content: `Started **${agentKey}** for **${project.name}**` });
     } catch (err) {
-      logError(`[Discord] failed to start agent for ${project.name}`, err);
+      logger.error({ err }, `[Discord] failed to start agent for ${project.name}`);
       await interaction.reply({ content: `Failed to start agent for **${project.name}**` });
     }
   }
