@@ -70,6 +70,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",
+    "@ngrok/ngrok": "^1.7.0",
     "@slack/web-api": "^7.14.1",
     "adm-zip": "^0.5.16",
     "better-sqlite3": "^12.6.2",

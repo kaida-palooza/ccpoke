@@ -22,11 +22,11 @@ import { SessionMap } from "./tmux/session-map.js";
 import { SessionStateManager } from "./tmux/session-state.js";
 import { TmuxBridge } from "./tmux/tmux-bridge.js";
 import { TmuxSessionResolver } from "./tmux/tmux-session-resolver.js";
+import { TunnelManager } from "./tunnel/tunnel-manager.js";
 import { ChannelName, CliCommand, InstallMethod, refreshWindowsPath } from "./utils/constants.js";
 import { detectInstallMethod } from "./utils/install-detection.js";
 import { flushLogger, logger } from "./utils/log.js";
 import { ensureShellCompletion } from "./utils/shell-completion.js";
-import { TunnelManager } from "./utils/tunnel.js";
 import { checkForUpdates } from "./utils/version-check.js";
 
 refreshWindowsPath();
@@ -131,11 +131,11 @@ async function startBot(): Promise<void> {
   await apiServer.start();
   logger.info(`ccpoke: ${t("bot.started", { port: cfg.hook_port })}`);
 
-  const tunnelManager = new TunnelManager();
+  const tunnelManager = new TunnelManager(cfg.tunnel, cfg.ngrok_authtoken);
   apiServer.setTunnelManager(tunnelManager);
   try {
     const tunnelUrl = await tunnelManager.start(cfg.hook_port);
-    logger.info(t("tunnel.started", { url: tunnelUrl }));
+    if (tunnelUrl) logger.info(t("tunnel.started", { url: tunnelUrl }));
   } catch (err: unknown) {
     logger.error({ err }, t("tunnel.failed"));
   }
@@ -206,7 +206,7 @@ async function startBot(): Promise<void> {
     logger.info(t("bot.shuttingDown"));
     sessionMap.stopPeriodicScan();
     sessionMap.save();
-    tunnelManager.stop();
+    await tunnelManager.stop();
     await channel.shutdown();
     await apiServer.stop();
     flushLogger(() => process.exit(0));

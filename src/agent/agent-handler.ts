@@ -1,9 +1,9 @@
 import type { NotificationChannel, NotificationData } from "../channel/types.js";
 import { t } from "../i18n/index.js";
+import type { TunnelManager } from "../tunnel/tunnel-manager.js";
 import { MINI_APP_BASE_URL } from "../utils/constants.js";
 import { logger } from "../utils/log.js";
 import { responseStore } from "../utils/response-store.js";
-import type { TunnelManager } from "../utils/tunnel.js";
 import type { AgentRegistry } from "./agent-registry.js";
 import type { ChatSessionResolver } from "./chat-session-resolver.js";
 
@@ -209,10 +209,11 @@ export class AgentHandler {
     this.onNotification?.({ ...event, sessionId });
   }
 
-  private buildResponseUrl(data: NotificationData): string {
-    const id = responseStore.save(data);
+  private buildResponseUrl(data: NotificationData): string | undefined {
+    const apiBase = this.tunnelManager.getPublicUrl();
+    if (!apiBase) return undefined;
 
-    const apiBase = this.tunnelManager.getPublicUrl() || `http://localhost:${this.hookPort}`;
+    const id = responseStore.save(data);
     const params = new URLSearchParams({
       id,
       api: apiBase,

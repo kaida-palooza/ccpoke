@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { chmodSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 
 import { isValidLocale, Locale, setLocale, t } from "./i18n/index.js";
+import { DEFAULT_TUNNEL_TYPE, type TunnelType } from "./tunnel/types.js";
 import { ChannelName, DEFAULT_HOOK_PORT } from "./utils/constants.js";
 import { paths } from "./utils/paths.js";
 
@@ -20,6 +21,8 @@ export interface Config {
   slack_channel_id?: string;
   hook_port: number;
   hook_secret: string;
+  tunnel: TunnelType;
+  ngrok_authtoken?: string;
   locale: Locale;
   agents: string[];
   projects: ProjectEntry[];
@@ -163,6 +166,17 @@ export class ConfigManager {
 
     const locale: Locale = isValidLocale(data.locale) ? data.locale : Locale.EN;
 
+    let tunnel: TunnelType = DEFAULT_TUNNEL_TYPE;
+    if (data.tunnel === false) {
+      tunnel = false;
+    } else if (data.tunnel === "cloudflare" || data.tunnel === "ngrok") {
+      tunnel = data.tunnel;
+    }
+    // TODO: re-add custom HTTPS URL validation when custom tunnel is implemented
+    // else if (typeof data.tunnel === "string" && data.tunnel.startsWith("https://")) {
+    //   tunnel = data.tunnel as `https://${string}`;
+    // }
+
     let agents: string[] = ["claude-code"];
     if (Array.isArray(data.agents) && data.agents.length > 0) {
       agents = data.agents.filter((a): a is string => typeof a === "string");
@@ -186,6 +200,7 @@ export class ConfigManager {
       user_id: typeof data.user_id === "number" ? data.user_id : 0,
       hook_port: hookPort,
       hook_secret: hookSecret,
+      tunnel,
       locale,
       agents,
       projects,
@@ -195,6 +210,9 @@ export class ConfigManager {
     if (typeof data.discord_user_id === "string") cfg.discord_user_id = data.discord_user_id;
     if (typeof data.slack_bot_token === "string") cfg.slack_bot_token = data.slack_bot_token;
     if (typeof data.slack_channel_id === "string") cfg.slack_channel_id = data.slack_channel_id;
+    if (typeof data.ngrok_authtoken === "string" && data.ngrok_authtoken.length > 0) {
+      cfg.ngrok_authtoken = data.ngrok_authtoken;
+    }
 
     return cfg;
   }

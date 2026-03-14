@@ -5,11 +5,11 @@ import express, { type Express } from "express";
 import { AgentHandler } from "../agent/agent-handler.js";
 import { AgentName } from "../agent/types.js";
 import { t } from "../i18n/index.js";
+import type { TunnelManager } from "../tunnel/tunnel-manager.js";
 import { ApiRoute, isWindows, MINI_APP_BASE_URL } from "../utils/constants.js";
 import { eventCollector } from "../utils/event-collector.js";
 import { logger } from "../utils/log.js";
 import { responseStore } from "../utils/response-store.js";
-import type { TunnelManager } from "../utils/tunnel.js";
 
 const ALLOWED_CORS_ORIGIN = new URL(MINI_APP_BASE_URL).origin;
 
@@ -83,6 +83,14 @@ export class ApiServer {
         next(err);
       }
     );
+    app.options(ApiRoute.ResponseData, (_req, res) => {
+      res
+        .header("Access-Control-Allow-Origin", "*")
+        .header("Access-Control-Allow-Headers", "ngrok-skip-browser-warning")
+        .header("Access-Control-Allow-Methods", "GET, OPTIONS")
+        .status(204)
+        .end();
+    });
     app.get(ApiRoute.ResponseData, (req, res) => {
       logger.debug(
         `[API] GET ${ApiRoute.ResponseData} id=${req.params.id} origin=${req.headers.origin ?? "none"}`
