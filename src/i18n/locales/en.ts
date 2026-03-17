@@ -264,6 +264,7 @@ export const en: TranslationKeys = {
     tmuxDead: "tmux session disconnected",
     paneDead: "Pane no longer exists",
     noAgent: "No agent running in pane",
+    sentToShell: "📩 Sent to shell (agent not running) → {project}",
     agentStarting: "Agent starting up, please wait...",
     agentNotRunning: "Agent is not running",
     sent: "📩 Sent → {project}",

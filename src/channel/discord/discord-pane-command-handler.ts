@@ -151,6 +151,8 @@ export class DiscordPaneCommandHandler {
     const result = this.paneStateManager.injectMessage(paneId, text);
     if ("sent" in result) {
       await interaction.reply({ content: `Sent to **${pane.project}**` });
+    } else if ("sentToShell" in result) {
+      await interaction.reply({ content: `Sent to shell (no agent) → **${pane.project}**` });
     } else if ("busy" in result) {
       await interaction.reply({ content: "Agent is busy.", ephemeral: true });
     } else if ("noAgent" in result) {

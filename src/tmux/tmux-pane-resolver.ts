@@ -1,7 +1,9 @@
 import type { ChatPaneResolver } from "../agent/chat-pane-resolver.js";
+import { AgentName } from "../agent/types.js";
 import { logger } from "../utils/log.js";
 import type { PaneRegistry } from "./pane-registry.js";
 import type { PaneStateManager } from "./pane-state-manager.js";
+import { findAgentDescendant, queryPanePid } from "./tmux-scanner.js";
 
 const MAX_AGENT_CACHE = 100;
 
@@ -41,6 +43,11 @@ export class TmuxPaneResolver implements ChatPaneResolver {
       this.agentToPaneId.delete(agentSessionId);
     }
 
+    if (!paneId) {
+      logger.debug(`[Resolver] no paneId hint, skipping project fallback (agent outside tmux)`);
+      return undefined;
+    }
+
     const resolved = this.findByProject(projectName, cwd);
     if (resolved && agentSessionId) this.cacheAgent(agentSessionId, resolved);
     logger.debug(`[Resolver] matched by project: ${projectName} → ${resolved ?? "NONE"}`);
@@ -58,7 +65,8 @@ export class TmuxPaneResolver implements ChatPaneResolver {
       if (agentSessionId) this.cacheAgent(agentSessionId, paneId);
       return paneId;
     }
-    this.paneRegistry.register(paneId, projectName, cwd ?? "");
+    const detectedAgent = this.detectAgentInPane(paneId);
+    this.paneRegistry.register(paneId, projectName, cwd ?? "", "", detectedAgent);
     if (agentSessionId) this.cacheAgent(agentSessionId, paneId);
     return paneId;
   }
@@ -83,5 +91,16 @@ export class TmuxPaneResolver implements ChatPaneResolver {
       (cwd && matches.length > 1 ? matches.find((p) => p.cwd === cwd) : undefined) ?? matches[0]!;
     logger.info(`pane linked by project: ${match.paneId} (${projectName})`);
     return match.paneId;
+  }
+
+  private detectAgentInPane(paneId: string): AgentName {
+    try {
+      const panePid = queryPanePid(paneId);
+      if (!panePid) return AgentName.ClaudeCode;
+      const agent = findAgentDescendant(panePid);
+      return agent ?? AgentName.ClaudeCode;
+    } catch {
+      return AgentName.ClaudeCode;
+    }
   }
 }

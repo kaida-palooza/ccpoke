@@ -342,7 +342,7 @@ export class TelegramChannel implements NotificationChannel {
         }
 
         const chatHealth = checkPaneHealth(chatParsed.paneId);
-        if (chatHealth.status === "dead" || chatHealth.panePid !== chatParsed.panePid) {
+        if (chatHealth.status === "dead") {
           await this.bot.answerCallbackQuery(query.id, { text: t("chat.sessionExpired") });
           return;
         }
@@ -360,10 +360,11 @@ export class TelegramChannel implements NotificationChannel {
           return;
         }
 
+        const chatLabel = buildSessionLabel(chatSession.project, "", chatParsed.paneId);
         const sent = await this.bot.sendMessage(
           query.message.chat.id,
           padMaxWidth(
-            `💬 *${escapeMarkdownV2(chatSession.project)}*\n${escapeMarkdownV2(t("chat.replyHint"))}`
+            `💬 *${escapeMarkdownV2(chatLabel)}*\n${escapeMarkdownV2(t("chat.replyHint"))}`
           ),
           {
             parse_mode: "MarkdownV2",
@@ -371,7 +372,7 @@ export class TelegramChannel implements NotificationChannel {
             reply_markup: {
               force_reply: true,
               selective: true,
-              input_field_placeholder: `${chatSession.project} → Claude`,
+              input_field_placeholder: `${chatLabel} → Claude`,
             },
           }
         );
@@ -449,11 +450,15 @@ export class TelegramChannel implements NotificationChannel {
         return;
       }
 
+      logger.debug(
+        `[Chat:pending-found] replyToMsgId=${msg.reply_to_message.message_id} → paneId=${pending.paneId} panePid=${pending.panePid} project=${pending.project}`
+      );
+
       this.pendingReplyStore.delete(msg.chat.id, msg.reply_to_message.message_id);
       this.bot.deleteMessage(msg.chat.id, msg.reply_to_message.message_id).catch(() => {});
 
       const health = checkPaneHealth(pending.paneId);
-      if (health.status === "dead" || health.panePid !== pending.panePid) {
+      if (health.status === "dead") {
         await this.bot.sendMessage(msg.chat.id, padMaxWidth(t("chat.sessionNotFound")));
         return;
       }
@@ -495,6 +500,12 @@ export class TelegramChannel implements NotificationChannel {
       } else if ("noAgent" in result) {
         logger.debug(`[Chat:result] noAgent → paneId=${pending.paneId}`);
         await this.bot.sendMessage(msg.chat.id, padMaxWidth(t("chat.noAgent")));
+      } else if ("sentToShell" in result) {
+        logger.debug(`[Chat:result] sentToShell → paneId=${pending.paneId}`);
+        await this.bot.sendMessage(
+          msg.chat.id,
+          padMaxWidth(t("chat.sentToShell", { project: pending.project }))
+        );
       }
     });
   }
@@ -510,7 +521,7 @@ export class TelegramChannel implements NotificationChannel {
     }
 
     const health = checkPaneHealth(paneId);
-    if (health.status === "dead" || health.panePid !== panePid) {
+    if (health.status === "dead") {
       await this.bot.answerCallbackQuery(query.id, { text: t("chat.sessionExpired") });
       return;
     }
@@ -521,10 +532,11 @@ export class TelegramChannel implements NotificationChannel {
       return;
     }
 
+    const elicitLabel = buildSessionLabel(pane.project, "", paneId);
     const sent = await this.bot.sendMessage(
       query.message.chat.id,
       padMaxWidth(
-        `💬 *${escapeMarkdownV2(pane.project)}*\n${escapeMarkdownV2(t("prompt.elicitationReplyHint"))}`
+        `💬 *${escapeMarkdownV2(elicitLabel)}*\n${escapeMarkdownV2(t("prompt.elicitationReplyHint"))}`
       ),
       {
         parse_mode: "MarkdownV2",
@@ -532,7 +544,7 @@ export class TelegramChannel implements NotificationChannel {
         reply_markup: {
           force_reply: true,
           selective: true,
-          input_field_placeholder: t("chat.placeholder"),
+          input_field_placeholder: `${elicitLabel} → Claude`,
         },
       }
     );
@@ -706,7 +718,7 @@ export class TelegramChannel implements NotificationChannel {
     }
 
     const health = checkPaneHealth(parsed.paneId);
-    if (health.status === "dead" || health.panePid !== parsed.panePid) {
+    if (health.status === "dead") {
       await this.bot.answerCallbackQuery(query.id, { text: t("chat.sessionExpired") });
       return;
     }

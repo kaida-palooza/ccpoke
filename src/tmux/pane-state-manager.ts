@@ -6,6 +6,7 @@ import { checkPaneHealth } from "./tmux-scanner.js";
 
 export type InjectResult =
   | { sent: true }
+  | { sentToShell: true }
   | { empty: true }
   | { busy: true }
   | { sessionNotFound: true }
@@ -45,16 +46,27 @@ export class PaneStateManager {
       this.paneRegistry.unregister(paneId);
       return { paneDead: true };
     }
-    if (health.status === "no_agent") {
-      logger.debug(`[Inject] no agent in pane: paneId=${paneId}`);
-      return { noAgent: true };
-    }
+
+    const agentGone = health.status === "no_agent";
 
     const trimmed = text.trim();
     if (trimmed.length === 0) return { empty: true };
 
     const safeText =
       trimmed.length > MAX_MESSAGE_LENGTH ? trimmed.slice(0, MAX_MESSAGE_LENGTH) : trimmed;
+
+    if (agentGone) {
+      logger.debug(`[Inject] no agent, sending directly to shell: paneId=${paneId}`);
+      try {
+        this.tmuxBridge.sendText(paneId, safeText);
+        this.tmuxBridge.sendSpecialKey(paneId, "Enter");
+        this.paneRegistry.touch(paneId);
+        return { sentToShell: true };
+      } catch (err) {
+        logger.debug(`[Inject] direct shell send failed: paneId=${paneId} err=${err}`);
+        return { paneDead: true };
+      }
+    }
 
     if (pane.state === PaneState.Busy) {
       logger.debug(`[Inject] busy: paneId=${paneId}`);

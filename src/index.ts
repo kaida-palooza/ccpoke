@@ -22,6 +22,7 @@ import { PaneRegistry } from "./tmux/pane-registry.js";
 import { PaneStateManager } from "./tmux/pane-state-manager.js";
 import { TmuxBridge } from "./tmux/tmux-bridge.js";
 import { TmuxPaneResolver } from "./tmux/tmux-pane-resolver.js";
+import { findAgentDescendant, queryPanePid } from "./tmux/tmux-scanner.js";
 import { TunnelManager } from "./tunnel/tunnel-manager.js";
 import { ChannelName, CliCommand, InstallMethod, refreshWindowsPath } from "./utils/constants.js";
 import { detectInstallMethod } from "./utils/install-detection.js";
@@ -103,6 +104,13 @@ async function startBot(): Promise<void> {
   if (tmuxBridge.isTmuxAvailable()) {
     paneRegistry.load();
     const bootResult = paneRegistry.refreshFromTmux(tmuxBridge);
+    if (
+      bootResult.reconciled > 0 ||
+      bootResult.discovered.length > 0 ||
+      bootResult.removed.length > 0
+    ) {
+      paneRegistry.save();
+    }
     chatResolver = new TmuxPaneResolver(paneRegistry, paneStateManager);
     paneRegistry.startPeriodicScan(tmuxBridge, 5_000, (result) => {
       for (const p of result.discovered)
@@ -167,7 +175,9 @@ async function startBot(): Promise<void> {
     if (!/^%\d+$/.test(obj.pane_id)) return;
     const cwd = typeof obj.cwd === "string" ? obj.cwd : "";
     const project = basename(cwd) || "unknown";
-    paneRegistry.register(obj.pane_id, project, cwd);
+    const panePid = typeof obj.pane_id === "string" ? queryPanePid(obj.pane_id) : undefined;
+    const detectedAgent = panePid ? (findAgentDescendant(panePid) ?? undefined) : undefined;
+    paneRegistry.register(obj.pane_id, project, cwd, "", detectedAgent);
     paneRegistry.save();
     logger.info(
       t("tmux.hookReceived", {

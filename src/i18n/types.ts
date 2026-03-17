@@ -245,6 +245,7 @@ export interface TranslationKeys {
     tmuxDead: string;
     paneDead: string;
     noAgent: string;
+    sentToShell: string;
     agentStarting: string;
     agentNotRunning: string;
     sent: string;

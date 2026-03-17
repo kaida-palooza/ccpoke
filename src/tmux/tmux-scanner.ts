@@ -22,6 +22,8 @@ export interface AgentPaneInfo extends TmuxPaneInfo {
 
 const FORMAT_STRING =
   "#{pane_id}|#{session_name}:#{window_index}.#{pane_index}|#{pane_title}|#{pane_current_path}|#{pane_pid}";
+const FORMAT_STRING_WIN =
+  "#{pane_id}|#{session_name}:#{window_index}.#{pane_index}|#{pane_current_path}|#{pane_pid}";
 const MAX_DESCENDANT_DEPTH = 8;
 
 interface ProcessEntry {
@@ -217,7 +219,8 @@ export interface AgentScanOutput {
 
 function listAllPanesRaw(): string {
   const bin = getTmuxBinary();
-  const formatArg = escapeShellArg(FORMAT_STRING);
+  const fmt = isWindows() ? FORMAT_STRING_WIN : FORMAT_STRING;
+  const formatArg = escapeShellArg(fmt);
 
   if (!isWindows()) {
     return execSync(`${bin} list-panes -a -F ${formatArg}`, {
@@ -244,7 +247,7 @@ function listAllPanesRaw(): string {
   const results: string[] = [];
   for (const name of sessionNames) {
     try {
-      const out = execSync(`${bin} list-panes -t ${escapeShellArg(name)} -F ${formatArg}`, {
+      const out = execSync(`${bin} list-panes -s -t ${escapeShellArg(name)} -F ${formatArg}`, {
         encoding: "utf-8",
         stdio: "pipe",
         timeout: 5000,
@@ -272,15 +275,18 @@ export function scanAgentPanes(): AgentScanOutput {
     const allPaneIds = new Set<string>();
     const panes: AgentPaneInfo[] = [];
 
+    const winMode = isWindows();
+    const minParts = winMode ? 4 : 5;
+
     for (const line of allLines) {
       const parts = line.split("|");
-      if (parts.length < 5) continue;
+      if (parts.length < minParts) continue;
       const paneId = parts[0]!;
       const target = parts[1]!;
       allPaneIds.add(paneId);
       const panePid = parts[parts.length - 1]!;
       const cwd = parts[parts.length - 2]!;
-      const paneTitle = parts.slice(2, parts.length - 2).join("|");
+      const paneTitle = winMode ? "" : parts.slice(2, parts.length - 2).join("|");
       const agentName = findAgentDescendant(panePid, tree);
       if (!agentName) continue;
       panes.push({ paneId, target, paneTitle, cwd, panePid, agentName });

@@ -260,6 +260,7 @@ export const zh: TranslationKeys = {
     tmuxDead: "tmux 会话已断开",
     paneDead: "面板已不存在",
     noAgent: "面板中没有运行的代理",
+    sentToShell: "📩 已发送到终端 (代理未运行) → {project}",
     agentStarting: "代理正在启动，请稍候...",
     agentNotRunning: "代理未在运行",
     sent: "📩 已发送 → {project}",

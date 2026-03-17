@@ -153,6 +153,7 @@ export class PaneRegistry {
     const { panes, allPaneIds, tree } = scanAgentPanes();
     const discovered: PaneMetadata[] = [];
     const removed: PaneMetadata[] = [];
+    let agentUpdatedCount = 0;
 
     for (const [paneId, pane] of this.panes) {
       if (!allPaneIds.has(paneId)) {
@@ -176,6 +177,15 @@ export class PaneRegistry {
           );
           existing.project = currentProject;
           existing.cwd = pane.cwd;
+        }
+        const scannedAgent =
+          "agentName" in pane ? (pane as { agentName: AgentName }).agentName : undefined;
+        if (scannedAgent && scannedAgent !== existing.agent) {
+          logger.debug(
+            `[Scan:agent] paneId=${pane.paneId} agent=${existing.agent}→${scannedAgent}`
+          );
+          existing.agent = scannedAgent;
+          agentUpdatedCount++;
         }
         continue;
       }
@@ -202,7 +212,12 @@ export class PaneRegistry {
       }
     }
 
-    return { discovered, removed, reconciled, total: this.panes.size };
+    return {
+      discovered,
+      removed,
+      reconciled: reconciled + agentUpdatedCount,
+      total: this.panes.size,
+    };
   }
 
   startPeriodicScan(

@@ -108,8 +108,13 @@ export function refreshWindowsPath(): void {
         .match(/REG_(?:EXPAND_)?SZ\s+(.+)/)?.[1]
         ?.trim() ?? "";
 
-    process.env.PATH = `${userPath};${machinePath}`;
+    const merged = `${userPath};${machinePath}`;
+    process.env.PATH = expandEnvVars(merged);
   } catch {
     /* best-effort */
   }
+}
+
+function expandEnvVars(value: string): string {
+  return value.replace(/%([^%]+)%/g, (_, name: string) => process.env[name] ?? `%${name}%`);
 }

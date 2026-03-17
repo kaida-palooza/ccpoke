@@ -264,6 +264,7 @@ export const vi: TranslationKeys = {
     tmuxDead: "tmux session đã ngắt kết nối",
     paneDead: "Pane không còn tồn tại",
     noAgent: "Không có agent nào chạy trong pane",
+    sentToShell: "📩 Đã gửi vào shell (agent chưa chạy) → {project}",
     agentStarting: "Agent đang khởi động, vui lòng đợi...",
     agentNotRunning: "Agent không chạy",
     sent: "📩 Đã gửi → {project}",
