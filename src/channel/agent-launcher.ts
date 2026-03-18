@@ -10,7 +10,7 @@ import { escapeShellArg, isCommandAvailable } from "../utils/shell.js";
 export const AGENT_START_COMMANDS: Record<string, string> = {
   [AgentName.ClaudeCode]: "claude --dangerously-skip-permissions",
   [AgentName.Cursor]: "agent --force",
-  [AgentName.Codex]: "codex --full-auto",
+  [AgentName.Codex]: "codex --yolo",
   [AgentName.GeminiCli]: "gemini --yolo",
   [AgentName.OpenCode]: "opencode",
 };
